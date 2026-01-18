@@ -1,85 +1,74 @@
 <script lang="ts">
-    import { invoke } from "@tauri-apps/api/core";
-    import { Button } from "$lib/components/ui/button";
-    import {
-        Card,
-        CardContent,
-        CardDescription,
-        CardHeader,
-        CardTitle,
-    } from "$lib/components/ui/card";
-    import { Input } from "$lib/components/ui/input";
-    import PowerShellDemo from "$lib/components/PowerShellDemo.svelte";
+  import { Button } from "$lib/components/ui/button";
+  import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+  } from "$lib/components/ui/card";
+  import { goto } from "$app/navigation";
 
-    let name = $state("");
-    let greetMsg = $state("");
-    let isLoading = $state(false);
+  function handleGetStarted() {
+    goto("/get-started");
+  }
 
-    async function greet(event: Event) {
-        event.preventDefault();
-        if (!name.trim()) return;
-
-        isLoading = true;
-        try {
-            greetMsg = await invoke("greet", { name });
-        } catch (error) {
-            greetMsg = "Error: " + String(error);
-        } finally {
-            isLoading = false;
-        }
-    }
+  function handleManualSetup() {
+    goto("/manual-setup");
+  }
 </script>
 
-<main class="min-h-screen">
-    <div class="container mx-auto px-4 py-16">
-        <div class="text-center mb-16 space-y-4">
-            <h1 class="text-5xl font-bold tracking-tight">PrepTool</h1>
-            <p class="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Built with Tauri, SvelteKit, and TypeScript
-            </p>
-        </div>
-
-        <div class="flex justify-center items-center gap-8 mb-16">
-            <a
-                href="https://tauri.app"
-                target="_blank"
-                class="transition-transform hover:scale-110"
-                aria-label="Tauri"
-            >
-                <img src="/tauri.svg" class="h-20 w-20" alt="Tauri Logo" />
-            </a>
-            <a
-                href="https://svelte.dev"
-                target="_blank"
-                class="transition-transform hover:scale-110"
-                aria-label="Svelte"
-            >
-                <img src="/svelte.svg" class="h-20 w-20" alt="Svelte Logo" />
-            </a>
-            <a
-                href="https://vite.dev"
-                target="_blank"
-                class="transition-transform hover:scale-110"
-                aria-label="Vite"
-            >
-                <img src="/vite.svg" class="h-20 w-20" alt="Vite Logo" />
-            </a>
-        </div>
-
-        <div class="max-w-2xl mx-auto">
-            <Card class="shadow-2xl">
-                <CardHeader>
-                    <CardTitle class="text-2xl">Welcome to PrepTool</CardTitle>
-                    <CardDescription>
-                        Enter your name below to receive a personalized greeting
-                        from Rust
-                    </CardDescription>
-                </CardHeader>
-
-                <CardContent>
-                    <PowerShellDemo />
-                </CardContent>
-            </Card>
-        </div>
+<div class="flex justify-between items-center h-screen p-4">
+  <div class="rounded-lg border bg-muted/80 p-8 lg:p-10 flex flex-col justify-between">
+    <div class="space-y-4">
+      <p class="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        Welcome
+      </p>
+      <h1 class="text-3xl font-semibold leading-tight font-serif">
+        BlossomOS Preperation Tool
+      </h1>
+      <p class="text-sm text-muted-foreground max-w-xl">
+        Prepare your system for installing BlossomOS with this easy-to-use tool.
+        Follow the steps to ensure a smooth installation process.
+      </p>
     </div>
-</main>
+    <div
+      class="rounded-lg border bg-background/80 p-4 mt-8 text-sm text-muted-foreground"
+    >
+      <div class="flex items-center gap-3">
+        <img src="/icon.svg" alt="Blossom" class="h-10 w-10" />
+        <div>
+          <p class="font-medium text-foreground font-serif">BlossomOS</p>
+          <p class="text-xs text-muted-foreground">
+            The operating system for the rest of us.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <Card class="m-4 shadow-none border">
+    <CardHeader>
+      <CardTitle>What would you like to do?</CardTitle>
+    </CardHeader>
+    <CardContent class="space-y-4">
+      <div class="rounded-lg border bg-card/60 p-4">
+        <p class="text-sm text-muted-foreground">
+          Install the BlossomOS recovery environment onto an existing USB drive
+        </p>
+        <div class="mt-3 flex gap-2">
+          <Button variant="outline" onclick={handleManualSetup}
+            >Manual setup</Button
+          >
+        </div>
+      </div>
+      <div class="rounded-lg border bg-card/60 p-4">
+        <p class="text-sm text-muted-foreground">
+          Prepare your system and install the recovery environment onto your USB
+          drive.
+        </p>
+        <div class="mt-3 flex gap-2">
+          <Button onclick={handleGetStarted}>Get started</Button>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+</div>

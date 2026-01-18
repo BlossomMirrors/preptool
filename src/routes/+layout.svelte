@@ -6,7 +6,14 @@
 	const { children } = $props();
 </script>
 
-<div class="dark bg-background text-foreground">{@render children()}</div>
+<div class="dark bg-background text-foreground">
+	<main class="min-h-screen min-w-screen">
+		<div class="mx-auto">
+			{@render children()}
+		</div>
+	</main>
+</div>
+
 <div style="display:none">
 	{#each locales as locale}
 		<a

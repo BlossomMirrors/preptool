@@ -389,7 +389,7 @@ export const PowerShellScripts = {
   },
 
   async listUsbDrives(): Promise<
-    PowerShellResult<Array<{ name: string; size: string; letter: string }>>
+    PowerShellResult<Array<{ name: string; size: string; diskNumber: number }>>
   > {
     try {
       const output = await executePowerShellScript({
@@ -399,7 +399,7 @@ export const PowerShellScripts = {
       const drives = JSON.parse(output) as Array<{
         name: string;
         size: string;
-        letter: string;
+        diskNumber: number;
       }>;
       return {
         success: true,

@@ -11,10 +11,10 @@
   import { page } from "$app/stores";
   import { PowerShellScripts } from "$lib/scripts";
 
-  let usbDrives = $state<Array<{ name: string; size: string; letter: string }>>([]);
+  let usbDrives = $state<Array<{ name: string; size: string; diskNumber: number }>>([]);
   let isLoading = $state(false);
   let error = $state<string>("");
-  let selectedDrive = $state<string>("");
+  let selectedDrive = $state<number | null>(null);
 
   async function loadUsbDrives() {
     isLoading = true;
@@ -38,13 +38,13 @@
     }
   }
 
-  function selectDrive(letter: string) {
-    selectedDrive = letter;
+  function selectDrive(diskNumber: number) {
+    selectedDrive = diskNumber;
   }
 
   function proceed() {
-    if (selectedDrive) {
-      sessionStorage.setItem("selectedUsbDrive", selectedDrive);
+    if (selectedDrive !== null) {
+      sessionStorage.setItem("selectedUsbDrive", String(selectedDrive));
       const next = $page.url.searchParams.get("next") || "simple";
       goto(`/get-started/${next}`);
     }
@@ -87,19 +87,19 @@
           <div class="space-y-2">
             {#each usbDrives as drive}
               <button
-                onclick={() => selectDrive(drive.letter)}
+                onclick={() => selectDrive(drive.diskNumber)}
                 class="w-full text-left border rounded-lg p-4 transition {selectedDrive ===
-                drive.letter
+                drive.diskNumber
                   ? 'bg-blue-900 border-blue-700'
                   : 'bg-zinc-800 border-zinc-700 hover:border-zinc-600'}"
               >
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="font-semibold text-white">{drive.name}</p>
-                    <p class="text-sm text-zinc-400">Drive: {drive.letter}:</p>
+                    <p class="text-sm text-zinc-400">Disk: {drive.diskNumber}</p>
                     <p class="text-sm text-zinc-400">Size: {drive.size}</p>
                   </div>
-                  {#if selectedDrive === drive.letter}
+                  {#if selectedDrive === drive.diskNumber}
                     <span class="text-blue-400">✓</span>
                   {/if}
                 </div>
@@ -113,10 +113,10 @@
             </p>
             <Button
               onclick={proceed}
-              disabled={!selectedDrive}
+              disabled={selectedDrive === null}
               class="w-full"
             >
-              Continue with {selectedDrive ? selectedDrive + ":" : "Selected Drive"}
+              Continue with {selectedDrive !== null ? "Disk " + selectedDrive : "Selected Drive"}
             </Button>
           </div>
         {:else}

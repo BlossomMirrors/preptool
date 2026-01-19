@@ -16,6 +16,8 @@
   let error = $state<string>("");
   let currentStepIndex = $state<number>(0);
   let showRestoreOption = $state(false);
+  let showPartitionPrompt = $state(false);
+  let partitionSizeGB = $state<number | null>(null);
 
   const steps = [
     {
@@ -70,12 +72,38 @@
         }
       }
 
-      const response = await PowerShellScripts.runScript(
-        stepId,
-        sessionStorage.getItem("selectedUsbDrive")
-          ? { UsbDrive: sessionStorage.getItem("selectedUsbDrive")! }
-          : undefined,
-      );
+      // Prompt for partition size before running partition step
+      if (stepId === "partition" && partitionSizeGB === null) {
+        showPartitionPrompt = true;
+        isLoading = false;
+        return;
+      }
+
+      const args: Record<string, string> = {};
+      
+      // Only pass DiskNumber for USB-related scripts
+      if (sessionStorage.getItem("selectedUsbDrive") && (stepId === "flash-usb" || stepId === "restore-usb")) {
+        args.DiskNumber = sessionStorage.getItem("selectedUsbDrive")!;
+      }
+      
+      // Only partition script needs FreeSpaceGB
+      if (stepId === "partition" && partitionSizeGB !== null) {
+        args.FreeSpaceGB = String(partitionSizeGB);
+      }
+
+      // Flash-usb needs the ISO path
+      if (stepId === "flash-usb") {
+        const isoCheck = await PowerShellScripts.checkIsoExists();
+        if (isoCheck.success && isoCheck.data?.path) {
+          args.ISOPath = isoCheck.data.path;
+        } else {
+          error = "ISO file not found. Please download the ISO first.";
+          isLoading = false;
+          return;
+        }
+      }
+
+      const response = await PowerShellScripts.runScript(stepId, args);
 
       if (response.success) {
         completedSteps = [...completedSteps, stepId];
@@ -92,6 +120,14 @@
     } finally {
       isLoading = false;
     }
+  }
+
+  function confirmPartitionSize() {
+    if (partitionSizeGB === null) {
+      partitionSizeGB = 128;
+    }
+    showPartitionPrompt = false;
+    runStep("partition");
   }
 
   function retryCurrentStep() {
@@ -124,6 +160,70 @@
         </CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
+        {#if showPartitionPrompt}
+          <div class="border-2 border-blue-700 bg-blue-950 rounded-lg p-6 space-y-4">
+            <h3 class="text-lg font-semibold text-white">Allocate Space for BlossomOS</h3>
+            <p class="text-sm text-blue-200">
+              How much free space would you like to allocate for the BlossomOS installation?
+            </p>
+            <p class="text-xs text-blue-300">
+              ℹ️ This shrinks your Windows partition while keeping at least 20GB allocated to Windows.
+            </p>
+            
+            <div class="space-y-3">
+              <div class="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="50"
+                  max="500"
+                  step="5"
+                  bind:value={partitionSizeGB}
+                  class="flex-1"
+                />
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-white">{partitionSizeGB ?? 128}</div>
+                  <div class="text-xs text-zinc-400">GB</div>
+                </div>
+              </div>
+              
+              <div class="flex gap-3">
+                <input
+                  type="number"
+                  min="50"
+                  max="500"
+                  bind:value={partitionSizeGB}
+                  class="flex-1 p-2 rounded border border-zinc-600 bg-zinc-800 text-white text-sm"
+                />
+              </div>
+              
+              <p class="text-xs text-zinc-400">
+                Minimum: 50GB | Maximum: 500GB | Typical: 128GB - 256GB
+              </p>
+            </div>
+
+            <div class="flex gap-3">
+              <Button
+                onclick={confirmPartitionSize}
+                disabled={isLoading || (partitionSizeGB !== null && (partitionSizeGB < 50 || partitionSizeGB > 500))}
+                class="flex-1"
+              >
+                Allocate {partitionSizeGB ?? 128}GB
+              </Button>
+              <Button
+                onclick={() => {
+                  showPartitionPrompt = false;
+                  isLoading = false;
+                }}
+                variant="outline"
+                disabled={isLoading}
+                class="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        {/if}
+
         {#if completedSteps.length === 0 && currentStepIndex === 0}
           <div class="bg-blue-900 border border-blue-700 rounded-lg p-4 text-center space-y-4">
             <p class="text-blue-100">
@@ -217,7 +317,7 @@
                           "restore-usb",
                           sessionStorage.getItem("selectedUsbDrive")
                             ? {
-                                UsbDrive: sessionStorage.getItem(
+                                DiskNumber: sessionStorage.getItem(
                                   "selectedUsbDrive",
                                 )!,
                               }

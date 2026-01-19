@@ -55,12 +55,26 @@
         }
       }
 
-      const response = await PowerShellScripts.runScript(
-        stepId,
-        sessionStorage.getItem("selectedUsbDrive")
-          ? { UsbDrive: sessionStorage.getItem("selectedUsbDrive")! }
-          : undefined,
-      );
+      const args: Record<string, string> = {};
+      
+      // Only pass DiskNumber for USB-related scripts
+      if (sessionStorage.getItem("selectedUsbDrive") && (stepId === "flash-usb" || stepId === "restore-usb")) {
+        args.DiskNumber = sessionStorage.getItem("selectedUsbDrive")!;
+      }
+      
+      // Flash-usb needs the ISO path
+      if (stepId === "flash-usb") {
+        const isoCheck = await PowerShellScripts.checkIsoExists();
+        if (isoCheck.success && isoCheck.data?.path) {
+          args.ISOPath = isoCheck.data.path;
+        } else {
+          error = "ISO file not found. Please download the ISO first.";
+          isLoading = false;
+          return;
+        }
+      }
+
+      const response = await PowerShellScripts.runScript(stepId, args);
 
       if (response.success) {
         completedSteps = [...completedSteps, stepId];
@@ -195,7 +209,7 @@
                           "restore-usb",
                           sessionStorage.getItem("selectedUsbDrive")
                             ? {
-                                UsbDrive: sessionStorage.getItem(
+                                DiskNumber: sessionStorage.getItem(
                                   "selectedUsbDrive",
                                 )!,
                               }

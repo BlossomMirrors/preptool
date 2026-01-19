@@ -1,25 +1,59 @@
 $ErrorActionPreference = 'SilentlyContinue'
 
 $usbDrives = @()
+$maxSizeBytes = 130 * 1GB
 
 try {
-    $wmiDisks = Get-WmiObject Win32_LogicalDisk -ErrorAction SilentlyContinue | Where-Object {
-        $_.DriveType -eq 2
-    }
-
-    foreach ($disk in $wmiDisks) {
-        $driveLetter = $disk.Name
-        $volumeName = $disk.VolumeName
-        $size = $disk.Size
+    # Get all disks and their partitions
+    $disks = Get-Disk -ErrorAction SilentlyContinue
+    
+    foreach ($disk in $disks) {
+        # Skip system disks (those with volumes containing Windows)
+        $isSystemDisk = $false
+        $partitions = $disk | Get-Partition -ErrorAction SilentlyContinue
         
-        if ($size -and $driveLetter) {
-            $sizeGB = [math]::Round($size / 1GB, 2)
-            $displayName = if ($volumeName) { "$volumeName" } else { "USB Drive" }
+        if ($partitions) {
+            foreach ($partition in $partitions) {
+                $volume = $partition | Get-Volume -ErrorAction SilentlyContinue
+                if ($volume -and $volume.DriveLetter) {
+                    $driveLetter = $volume.DriveLetter
+                    $systemPath = "${driveLetter}:\Windows\System32"
+                    if (Test-Path $systemPath) {
+                        $isSystemDisk = $true
+                        break
+                    }
+                }
+            }
+        }
+        
+        # Skip if system disk or too large
+        if ($isSystemDisk) {
+            continue
+        }
+        
+        $totalSize = $disk.Size
+        if ($totalSize -and $totalSize -lt $maxSizeBytes) {
+            $sizeGB = [math]::Round($totalSize / 1GB, 2)
+            
+            # Get volume names from partitions
+            $volumeNames = @()
+            foreach ($partition in $partitions) {
+                $volume = $partition | Get-Volume -ErrorAction SilentlyContinue
+                if ($volume -and $volume.FileSystemLabel) {
+                    $volumeNames += $volume.FileSystemLabel
+                }
+            }
+            
+            $displayName = if ($volumeNames.Count -gt 0) { 
+                $volumeNames -join " / " 
+            } else { 
+                "USB Drive" 
+            }
             
             $usbDrives += @{
                 name = $displayName
                 size = "$sizeGB GB"
-                letter = $driveLetter.TrimEnd(':')
+                diskNumber = $disk.Number
             }
         }
     }

@@ -2,12 +2,22 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "core:path:default",
     "opener:default",
     "shell:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://cdn.blossomos.org/iso/**"
+        }
+      ]
+    },
     {
       "identifier": "shell:allow-spawn",
       "allow": [
@@ -30,10 +40,20 @@
     },
     {
       "identifier": "fs:scope",
-      "allow": [{ "path": "$RESOURCE/**" }]
+      "allow": [
+        {
+          "path": "$RESOURCE/**"
+        },
+        {
+          "path": "$DOWNLOAD/**"
+        }
+      ]
     },
     "fs:allow-read-dir",
     "fs:allow-read-file",
-    "fs:allow-exists"
+    "fs:allow-write-file",
+    "fs:allow-remove",
+    "fs:allow-exists",
+    "http:default"
   ]
 }

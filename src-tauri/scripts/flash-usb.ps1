@@ -1,6 +1,6 @@
 param(
 	[Parameter(Mandatory=$true)]
-	[string]$DriveLetter,
+	[string]$DiskNumber,
 	[Parameter(Mandatory=$true)]
 	[string]$ISOPath
 )
@@ -27,7 +27,7 @@ function Write-Error-Custom { param([string]$Message,[hashtable]$Data=@{}) Write
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 	Write-Info "Elevating privileges..."
 	$scriptPath = $MyInvocation.MyCommand.Path
-	Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -DriveLetter $DriveLetter -ISOPath `"$ISOPath`"" -Verb RunAs -Wait
+	Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -DiskNumber $DiskNumber -ISOPath `"$ISOPath`"" -Verb RunAs -Wait
 	exit
 }
 
@@ -82,12 +82,12 @@ function Get-ChocoPath {
 }
 
 try {
-	# Normalize drive letter (remove colon if present)
-	$drive = $DriveLetter.TrimEnd(':').ToUpper()
-	if ($drive.Length -ne 1 -or -not [char]::IsLetter($drive)) {
-		Write-Error-Custom "Invalid drive letter" @{ provided = $DriveLetter }
+	# Validate disk number
+	if (-not [int]::TryParse($DiskNumber, [ref]$null)) {
+		Write-Error-Custom "Invalid disk number" @{ provided = $DiskNumber }
 		exit 1
 	}
+	$diskNum = [int]$DiskNumber
 
 	# Validate ISO file exists
 	if (-not (Test-Path $ISOPath)) {
@@ -97,13 +97,58 @@ try {
 	$ISOAbsPath = (Resolve-Path $ISOPath).Path
 	Write-Info "ISO file validated" @{ path = $ISOAbsPath; size = ((Get-Item $ISOAbsPath).Length / 1GB).ToString("F2") + " GB" }
 
-	# Validate drive exists
-	$drivePath = "$drive`:"
-	if (-not (Test-Path $drivePath)) {
-		Write-Error-Custom "Drive not found" @{ drive = $drivePath }
+	# Validate disk exists
+	$disk = Get-Disk -Number $diskNum -ErrorAction SilentlyContinue
+	if (-not $disk) {
+		Write-Error-Custom "Disk not found" @{ diskNumber = $diskNum }
 		exit 1
 	}
-	Write-Info "Drive detected" @{ drive = $drivePath }
+	Write-Info "Disk detected" @{ diskNumber = $diskNum; size = ($disk.Size / 1GB).ToString("F2") + " GB" }
+
+	# Ensure dd is installed via Chocolatey
+	$chocoPath = Get-ChocoPath
+	if (-not $chocoPath) {
+		Write-Error-Custom "Cannot proceed without Chocolatey"
+		exit 1
+	}
+
+	Write-Info "Checking if Win32 Disk Imager is installed"
+	$imagerInstalled = & $chocoPath list --local-only --exact win32-disk-imager | Out-String
+	if ($imagerInstalled -notmatch 'win32-disk-imager') {
+		Write-Info "Win32 Disk Imager not available via Chocolatey, using diskpart method"
+	} else {
+		Write-Success "win32-disk-imager already installed"
+		
+		# Locate Win32 Disk Imager executable
+		$imagerPath = "Win32DiskImager.exe"
+		$commonPaths = @(
+			"C:\Program Files\Win32DiskImager\Win32DiskImager.exe",
+			"C:\Program Files (x86)\Win32DiskImager\Win32DiskImager.exe"
+		)
+		
+		foreach ($path in $commonPaths) {
+			if (Test-Path $path) {
+				$imagerPath = $path
+				break
+			}
+		}
+		
+		Write-Info "Win32 Disk Imager located" @{ path = $imagerPath }
+
+		# Flash the ISO using Win32 Disk Imager
+		Write-Info "Flashing ISO to USB disk..."
+		$proc = Start-Process -FilePath $imagerPath -ArgumentList "-m `"$ISOAbsPath`" -d $diskNum" -NoNewWindow -PassThru -Wait
+		$exitCode = $proc.ExitCode
+		Write-Info "Win32 Disk Imager process completed" @{ exitCode = $exitCode }
+
+		if ($exitCode -eq 0) {
+			Write-Success "USB flashing completed successfully" @{ diskNumber = $diskNum; ISO = $ISOAbsPath }
+			exit 0
+		} else {
+			Write-Error-Custom "Win32 Disk Imager exited with error" @{ exitCode = $exitCode }
+			exit $exitCode
+		}
+	}
 
 	# Ensure dd is installed via Chocolatey
 	$chocoPath = Get-ChocoPath
@@ -113,10 +158,10 @@ try {
 	}
 
 	Write-Info "Checking if dd is installed"
-	$ddInstalled = & $chocoPath list --local-only --exact gnuwin32-coreutils | Out-String
-	if ($ddInstalled -notmatch 'gnuwin32-coreutils') {
+	$ddInstalled = & $chocoPath list --local-only --exact dd | Out-String
+	if ($ddInstalled -notmatch 'dd') {
 		Write-Info "Installing dd via Chocolatey"
-		& $chocoPath install gnuwin32-coreutils -y 2>&1 | Out-Null
+		& $chocoPath install dd -y 2>&1 | Out-Null
 		$exitCode = $LASTEXITCODE
 		if ($exitCode -ne 0) {
 			Write-Error-Custom "Failed to install dd" @{ exitCode = $exitCode }
@@ -127,6 +172,25 @@ try {
 		Write-Success "dd already installed"
 	}
 
+	# Offline the disk using diskpart so dd can write to it completely
+	Write-Info "Removing all partitions and offlining disk..."
+	$tempDir = $env:TEMP
+	$diskpartScript = Join-Path $tempDir "offline_$([guid]::NewGuid()).txt"
+	
+	@(
+		"select disk $diskNum",
+		"clean all",
+		"offline disk noerr",
+		"exit"
+	) | Out-File -FilePath $diskpartScript -Encoding ASCII
+
+	$proc = Start-Process -FilePath "diskpart.exe" -ArgumentList "/s `"$diskpartScript`"" -NoNewWindow -PassThru -Wait
+	Remove-Item $diskpartScript -Force -ErrorAction SilentlyContinue
+	Write-Info "Disk prepared" @{ exitCode = $proc.ExitCode }
+	
+	# Wait for disk to be fully offline and cleaned
+	Start-Sleep -Seconds 5
+
 	# Locate dd executable
 	$ddPath = "dd"
 	try {
@@ -135,15 +199,29 @@ try {
 	} catch {}
 	Write-Info "dd located" @{ path = $ddPath }
 
-	# Flash the ISO using dd
-	Write-Info "Flashing ISO to USB..."
-	$ddArgs = "if=`"$ISOAbsPath`" of=\\.\$drive`: bs=4M status=progress"
+	# Final wait to ensure all handles are released
+	Write-Info "Waiting for system to release all disk handles..."
+	Start-Sleep -Seconds 5
+	
+	# Flash the ISO using dd (without unsupported options for Windows dd)
+	Write-Info "Flashing ISO to USB disk (this may take several minutes)..."
+	$isoSize = (Get-Item $ISOAbsPath).Length
+	Write-Info "ISO size" @{ bytes = $isoSize; gb = ($isoSize / 1GB).ToString("F2") }
+	
+	# Windows dd uses different syntax - no status=progress option
+	$ddArgs = "if=`"$ISOAbsPath`" of=\\.\PhysicalDrive$diskNum bs=4M"
 	$proc = Start-Process -FilePath $ddPath -ArgumentList $ddArgs -NoNewWindow -PassThru -Wait
 	$exitCode = $proc.ExitCode
 	Write-Info "dd process completed" @{ exitCode = $exitCode }
 
+	# Wait a moment for buffers to flush
+	Start-Sleep -Seconds 2
+
+	# Verify the operation
 	if ($exitCode -eq 0) {
-		Write-Success "USB flashing completed successfully" @{ drive = $drivePath; ISO = $ISOAbsPath }
+		Write-Info "Waiting for disk operations to complete..."
+		Start-Sleep -Seconds 3
+		Write-Success "USB flashing completed successfully" @{ diskNumber = $diskNum; ISO = $ISOAbsPath; sizeGB = ($isoSize / 1GB).ToString("F2") }
 		exit 0
 	} else {
 		Write-Error-Custom "dd exited with error" @{ exitCode = $exitCode }

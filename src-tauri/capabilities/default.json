@@ -9,6 +9,16 @@
     "opener:default",
     "shell:default",
     {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "powershell",
+          "cmd": "powershell",
+          "args": true
+        }
+      ]
+    },
+    {
       "identifier": "shell:allow-execute",
       "allow": [
         {

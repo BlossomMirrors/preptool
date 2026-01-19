@@ -18,8 +18,8 @@ function Write-Success { param([string]$Message,[hashtable]$Data=@{}) Write-Json
 function Write-Warning-Custom { param([string]$Message,[hashtable]$Data=@{}) Write-JsonOutput -Status warning -Message $Message -Data $Data }
 function Write-Error-Custom { param([string]$Message,[hashtable]$Data=@{}) Write-JsonOutput -Status error -Message $Message -Data $Data }
 
-# Ensure Chocolatey is installed
-function Ensure-Chocolatey {
+# Get Chocolatey path, installing if needed
+function Get-ChocoPath {
 	Write-Info "Checking Chocolatey installation"
 
 	# Detect Chocolatey
@@ -70,6 +70,3 @@ function Ensure-Chocolatey {
 
 	return $chocoPath
 }
-
-# Export the function so it can be called by sourcing scripts
-Export-ModuleMember -Function Ensure-Chocolatey

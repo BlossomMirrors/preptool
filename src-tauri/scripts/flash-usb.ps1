@@ -32,7 +32,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 # Inline Chocolatey installer to avoid module import issues
-function Ensure-Chocolatey {
+function Get-ChocoPath {
 	Write-Info "Checking Chocolatey installation"
 
 	$chocoPath = $null
@@ -106,7 +106,7 @@ try {
 	Write-Info "Drive detected" @{ drive = $drivePath }
 
 	# Ensure dd is installed via Chocolatey
-	$chocoPath = Ensure-Chocolatey
+	$chocoPath = Get-ChocoPath
 	if (-not $chocoPath) {
 		Write-Error-Custom "Cannot proceed without Chocolatey"
 		exit 1
@@ -116,7 +116,7 @@ try {
 	$ddInstalled = & $chocoPath list --local-only --exact gnuwin32-coreutils | Out-String
 	if ($ddInstalled -notmatch 'gnuwin32-coreutils') {
 		Write-Info "Installing dd via Chocolatey"
-		$result = & $chocoPath install gnuwin32-coreutils -y 2>&1 | Out-String
+		& $chocoPath install gnuwin32-coreutils -y 2>&1 | Out-Null
 		$exitCode = $LASTEXITCODE
 		if ($exitCode -ne 0) {
 			Write-Error-Custom "Failed to install dd" @{ exitCode = $exitCode }

@@ -32,7 +32,7 @@ try {
 	# Check if UEFI is supported (best-effort)
 	$uefi = $false
 	try {
-		$sb = Confirm-SecureBootUEFI -ErrorAction Stop
+		Confirm-SecureBootUEFI -ErrorAction Stop
 		$uefi = $true
 	} catch {
 		# If cmdlet not available or throws on non-UEFI, keep $uefi as $false
@@ -41,9 +41,9 @@ try {
 
 	# Attempt reboot to firmware; if not supported, perform normal reboot
 	$cmd = "shutdown.exe"
-	$args = "/r /fw /t 0"
-	$proc = Start-Process -FilePath $cmd -ArgumentList $args -PassThru -Wait
-	Write-Info "shutdown invoked" @{ exitCode = $proc.ExitCode; args = $args }
+	$argList = "/r /fw /t 0"
+	$proc = Start-Process -FilePath $cmd -ArgumentList $argList -PassThru -Wait
+	Write-Info "shutdown invoked" @{ exitCode = $proc.ExitCode; args = $argList }
 	Write-Success "Reboot initiated to firmware (if supported)"
 	exit 0
 } catch {

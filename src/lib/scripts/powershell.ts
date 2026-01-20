@@ -1,6 +1,7 @@
 import { Command } from "@tauri-apps/plugin-shell";
 import { resolveResource } from "@tauri-apps/api/path";
 import { readDir } from "@tauri-apps/plugin-fs";
+import { debug, info, error as logError } from "@tauri-apps/plugin-log";
 
 export interface PowerShellResult<T = unknown> {
   success: boolean;
@@ -22,6 +23,10 @@ export async function executePowerShellScript(
 
   try {
     const scriptPath = await resolveResource(`scripts/${scriptName}`);
+    
+    // Add logging
+    await debug(`Executing PowerShell script: ${scriptName} with args: ${JSON.stringify(args)}`).catch(() => {});
+    
     const psArgs = [
       "-ExecutionPolicy",
       "Bypass",
@@ -43,12 +48,53 @@ export async function executePowerShellScript(
       let hasError = false;
 
       command.stdout.on("data", (data) => {
-        output += data;
+        try {
+          // Try to ensure UTF-8 decoding
+          if (typeof data === "string") {
+            output += data;
+            // Log each line of output
+            debug(data).catch(() => {});
+          } else if (Buffer.isBuffer(data)) {
+            const str = data.toString("utf8");
+            output += str;
+            debug(str).catch(() => {});
+          } else {
+            const str = String(data);
+            output += str;
+            debug(str).catch(() => {});
+          }
+        } catch (e) {
+          // Fall back to latin1 if UTF-8 fails
+          if (Buffer.isBuffer(data)) {
+            const str = data.toString("latin1");
+            output += str;
+            debug(str).catch(() => {});
+          }
+        }
       });
 
       command.stderr.on("data", (data) => {
-        hasError = true;
-        output += data;
+        try {
+          hasError = true;
+          if (typeof data === "string") {
+            output += data;
+            logError(`[stderr] ${data}`).catch(() => {});
+          } else if (Buffer.isBuffer(data)) {
+            const str = data.toString("utf8");
+            output += str;
+            logError(`[stderr] ${str}`).catch(() => {});
+          } else {
+            const str = String(data);
+            output += str;
+            logError(`[stderr] ${str}`).catch(() => {});
+          }
+        } catch (e) {
+          if (Buffer.isBuffer(data)) {
+            const str = data.toString("latin1");
+            output += str;
+            logError(`[stderr] ${str}`).catch(() => {});
+          }
+        }
       });
 
       command.on("close", (data) => {
@@ -136,6 +182,7 @@ export async function executePowerShellScript(
     });
   } catch (error) {
     const errorMsg = String(error);
+    logError(`PowerShell script error (${scriptName}): ${errorMsg}`).catch(() => {});
     if (
       errorMsg.includes("No such file or directory") ||
       errorMsg.includes("ENOENT")

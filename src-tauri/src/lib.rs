@@ -1,4 +1,5 @@
 use futures_util::StreamExt;
+use log::info;
 use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
@@ -8,8 +9,8 @@ use std::sync::{
 };
 use tauri::Emitter;
 use tauri::Manager;
-use tauri::Window;
 use tauri::State;
+use tauri::Window;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -25,13 +26,13 @@ async fn download_file(
 ) -> Result<(), String> {
     // Reset on launch
     cancelled.store(false, Ordering::Relaxed);
-    
+
     // Always delete existing file to prevent corruption from partial downloads
     let _ = std::fs::remove_file(&path);
 
     let client = reqwest::Client::new();
     let response = client.get(&url).send().await.map_err(|e| e.to_string())?;
-    
+
     // Get the total file size
     let total_size = response.content_length().unwrap_or(0);
 
@@ -62,10 +63,8 @@ async fn download_file(
     drop(file); // Explicitly close the file
 
     // Verify the file was actually written
-    let final_size = std::fs::metadata(&path)
-        .map_err(|e| e.to_string())?
-        .len();
-    
+    let final_size = std::fs::metadata(&path).map_err(|e| e.to_string())?.len();
+
     if final_size == 0 {
         return Err("Downloaded file is empty".to_string());
     }
@@ -102,7 +101,22 @@ async fn verify_sha256(path: String, expected_sha256: String) -> Result<bool, St
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .level(tauri_plugin_log::log::LevelFilter::Info)
+                .build(),
+        )
         .manage(Arc::new(AtomicBool::new(false)))
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .level(log::LevelFilter::Info)
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::LogDir {
+                        file_name: Some("preptool".to_string()),
+                    },
+                ))
+                .build(),
+        )
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())

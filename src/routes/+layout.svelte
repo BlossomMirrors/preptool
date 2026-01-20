@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
+	import { attachConsole } from '@tauri-apps/plugin-log';
 	import "./layout.css";
 
 	const { children } = $props();
+
+	// Initialize logging on mount
+	if (typeof window !== 'undefined') {
+		attachConsole().catch(console.error);
+	}
 </script>
 
 <div class="dark bg-background text-foreground">

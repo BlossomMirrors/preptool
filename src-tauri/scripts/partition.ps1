@@ -66,19 +66,6 @@ function Write-Info {
     Write-JsonOutput -Status "info" -Message $Message -Data $Data
 }
 
-# Validate and auto-elevate Administrator privileges
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Info "Elevating privileges..."
-    
-    # Rebuild the command line arguments
-    $args_str = if ($FreeSpaceGB) { "-FreeSpaceGB $FreeSpaceGB" } else { "" }
-    
-    # Re-run the script with elevated privileges
-    $scriptPath = $MyInvocation.MyCommand.Path
-    Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" $args_str" -Verb RunAs -Wait
-    exit
-}
-
 Write-Info "Partition Resize Script - Windows Root Partition Manager"
 
 # Get current partition information

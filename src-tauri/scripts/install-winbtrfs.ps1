@@ -18,14 +18,6 @@ function Write-Success { param([string]$Message,[hashtable]$Data=@{}) Write-Json
 function Write-Warning-Custom { param([string]$Message,[hashtable]$Data=@{}) Write-JsonOutput -Status warning -Message $Message -Data $Data }
 function Write-Error-Custom { param([string]$Message,[hashtable]$Data=@{}) Write-JsonOutput -Status error -Message $Message -Data $Data }
 
-# Auto-elevate if not running as Admin
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	Write-Info "Elevating privileges..."
-	$scriptPath = $MyInvocation.MyCommand.Path
-	Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" -Verb RunAs -Wait
-	exit
-}
-
 Write-Info "Checking Chocolatey installation"
 
 # Detect Chocolatey

@@ -6,13 +6,6 @@ $ErrorActionPreference = 'Stop'
 
 $result = @{ success = $false; message = ""; disk = "" }
 
-# Auto-elevate if not running as Admin
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    $scriptPath = $MyInvocation.MyCommand.Path
-    Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" -DiskNumber $DiskNumber" -Verb RunAs -Wait
-    exit
-}
-
 try {
     if (-not $DiskNumber) {
         throw "Disk number not specified"

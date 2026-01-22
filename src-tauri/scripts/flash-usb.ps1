@@ -24,7 +24,8 @@ function Write-Error-Custom { param($m,$d=@{}) Write-JsonOutput -Status error -M
 # Chocolatey check/installer
 function Get-ChocoPath {
     Write-Info "Checking Chocolatey installation"
-    $choco = (Get-Command choco -ErrorAction SilentlyContinue)?.Source
+    $chocoCmd = Get-Command choco -ErrorAction SilentlyContinue
+    $choco = if ($chocoCmd) { $chocoCmd.Source } else { $null }
     if (-not $choco) {
         $fallback = Join-Path $env:ProgramData "chocolatey\bin\choco.exe"
         if (Test-Path $fallback) { $choco = $fallback }
@@ -38,7 +39,8 @@ function Get-ChocoPath {
             $installScript = Join-Path $tmp "install.ps1"
             Invoke-WebRequest "https://community.chocolatey.org/install.ps1" -OutFile $installScript -UseBasicParsing
             Start-Process -FilePath powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$installScript`"" -Wait -NoNewWindow
-            $choco = (Get-Command choco -ErrorAction SilentlyContinue)?.Source
+            $chocoCmd = Get-Command choco -ErrorAction SilentlyContinue
+            $choco = if ($chocoCmd) { $chocoCmd.Source } else { $null }
             if ($choco) { Write-Success "Chocolatey installed" @{ path=$choco } }
             else { Write-Error-Custom "Chocolatey installation failed"; return $null }
         } catch { Write-Error-Custom "Chocolatey install error" @{ error=$_ }; return $null }
@@ -50,7 +52,11 @@ try {
     # Validate inputs
     if (-not [int]::TryParse($DiskNumber,[ref]$null)) { throw "Invalid disk number: $DiskNumber" }
     $diskNum = [int]$DiskNumber
-    if (-not (Test-Path $ISOPath)) { throw "ISO not found: $ISOPath" }
+    if (-not $ISOPath) { throw "ISO path not provided" }
+    if (-not (Test-Path $ISOPath)) { 
+        $expandedPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ISOPath)
+        throw "ISO not found at path: $expandedPath (provided: $ISOPath)"
+    }
     $ISOAbs = (Resolve-Path $ISOPath).Path
     Write-Info "ISO validated" @{ path=$ISOAbs; sizeGB=([math]::Round((Get-Item $ISOAbs).Length/1GB,2)) }
 

@@ -39,12 +39,19 @@ try {
 
     # Validations
     if ($FreeSpaceGB -le 0) { throw "Free space must be > 0GB" }
-    if ($FreeSpaceGB -gt $cSizeGB) { 
+    
+    # Calculate what the C: partition size would be after shrinking
+    $maxAllowedShrink = $cSizeGB - 20  # Keep at least 20GB for Windows
+    
+    if ($FreeSpaceGB -gt $maxAllowedShrink) { 
         if ($AllowPartial) { 
-            Write-Warning-Custom "Requested free space exceeds partition, will use max available" @{ requestedGB=$FreeSpaceGB; maxGB=$cSizeGB }
-            $FreeSpaceGB = $cSizeGB - 20
-        } else { throw "Requested free space exceeds partition and partial not allowed" }
+            Write-Warning-Custom "Requested partition exceeds available space, using maximum available" @{ requestedGB=$FreeSpaceGB; maxAvailableGB=$maxAllowedShrink; cDriveSizeGB=$cSizeGB }
+            $FreeSpaceGB = $maxAllowedShrink
+        } else { 
+            throw "Requested partition size ($FreeSpaceGB GB) exceeds maximum available ($maxAllowedShrink GB) - must keep at least 20GB for Windows"
+        }
     }
+    
     $targetGB = [math]::Round($cSizeGB - $FreeSpaceGB,2)
     if ($targetGB -lt 20) { throw "Resulting partition would be below 20GB minimum" }
 

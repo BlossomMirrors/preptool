@@ -94,13 +94,17 @@
       // Flash-usb needs the ISO path
       if (stepId === "flash-usb") {
         const isoCheck = await PowerShellScripts.checkIsoExists();
-        if (isoCheck.success && isoCheck.data?.path) {
-          args.ISOPath = isoCheck.data.path;
-        } else {
+        if (!isoCheck.success) {
+          error = "Failed to check ISO cache: " + (isoCheck.error || "Unknown error");
+          isLoading = false;
+          return;
+        }
+        if (!isoCheck.data?.exists || !isoCheck.data?.path) {
           error = "ISO file not found. Please download the ISO first.";
           isLoading = false;
           return;
         }
+        args.ISOPath = isoCheck.data.path;
       }
 
       const response = await PowerShellScripts.runScript(stepId, args);

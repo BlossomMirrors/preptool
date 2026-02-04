@@ -247,6 +247,46 @@ namespace BlossomPrepTool
                 AppendLog($"Exception in GetBalenaEtcherPath: {ex}");
             }
 
+            try
+            {
+                var chocoBinExe = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                    "chocolatey", "bin", "balena.exe");
+                if (File.Exists(chocoBinExe))
+                {
+                    AppendLog($"balena-cli found in chocolatey bin: {chocoBinExe}");
+                    return chocoBinExe;
+                }
+
+                var chocoBinCmd = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                    "chocolatey", "bin", "balena.cmd");
+                if (File.Exists(chocoBinCmd))
+                {
+                    AppendLog($"balena-cli found in chocolatey bin: {chocoBinCmd}");
+                    return chocoBinCmd;
+                }
+
+                var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                var balenaInstallExe = Path.Combine(programFiles, "balena-cli", "bin", "balena.exe");
+                if (File.Exists(balenaInstallExe))
+                {
+                    AppendLog($"balena-cli found in Program Files: {balenaInstallExe}");
+                    return balenaInstallExe;
+                }
+
+                var balenaInstallCmd = Path.Combine(programFiles, "balena-cli", "bin", "balena.cmd");
+                if (File.Exists(balenaInstallCmd))
+                {
+                    AppendLog($"balena-cli found in Program Files: {balenaInstallCmd}");
+                    return balenaInstallCmd;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"Exception while checking balena-cli fallback paths: {ex}");
+            }
+
             return null;
         }
 

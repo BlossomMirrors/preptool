@@ -651,7 +651,7 @@ namespace BlossomPrepTool
         {
             if (cmbUSBDrives.SelectedIndex < 0)
             {
-                MessageBox.Show("Please select a USB drive", "No Drive Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Localizer.GetString("Message.NoUsbSelected"), Localizer.GetString("MessageBox.NoUsbSelected"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -660,12 +660,12 @@ namespace BlossomPrepTool
 
             if (!System.IO.File.Exists(isoPath))
             {
-                MessageBox.Show("ISO file not found. Please download it first.", "ISO Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Localizer.GetString("Message.IsoNotFoundSimple"), Localizer.GetString("MessageBox.IsoNotFound"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (MessageBox.Show($"This will erase all data on Disk {selectedDrive.DiskNumber}. Continue?",
-                "Confirm USB Flash", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            if (MessageBox.Show(Localizer.GetString("Message.EraseUsbWarning", selectedDrive.DiskNumber),
+                Localizer.GetString("MessageBox.ConfirmUsbFlash"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 return;
 
             btnFlashUSB.Enabled = false;
@@ -728,8 +728,8 @@ namespace BlossomPrepTool
             var targetSize = (double)numPartitionSize.Value;
 
             if (MessageBox.Show(
-                $"This will resize your C: partition to create {targetSize}GB of free space.\nThis operation requires a restart and should not be interrupted!\n\nContinue?",
-                "Confirm Partition Resize", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                Localizer.GetString("Message.PartitionResizeWarning"),
+                Localizer.GetString("MessageBox.ConfirmPartitionResize"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 return;
 
             btnResizePartition.Enabled = false;
@@ -789,8 +789,8 @@ namespace BlossomPrepTool
 
         private async void btnInstallWinBTRFS_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("This will install winbtrfs via Chocolatey.\nContinue?",
-                "Confirm Installation", MessageBoxButtons.YesNo, MessageBoxIcon.Information) != DialogResult.Yes)
+            if (MessageBox.Show(Localizer.GetString("Message.InstallWinBtrfs"),
+                Localizer.GetString("MessageBox.ConfirmInstallation"), MessageBoxButtons.YesNo, MessageBoxIcon.Information) != DialogResult.Yes)
                 return;
 
             btnInstallWinBTRFS.Enabled = false;

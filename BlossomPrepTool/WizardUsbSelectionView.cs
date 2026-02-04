@@ -19,6 +19,7 @@ namespace BlossomPrepTool
         public WizardUsbSelectionView()
         {
             InitializeComponent();
+            ApplyLocalization();
             
             ApplyRoundedCorners();
             FixLabelTransparency();
@@ -31,6 +32,16 @@ namespace BlossomPrepTool
             
             // Trigger initial USB refresh when view is loaded
             this.Load += (s, e) => RefreshClicked?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ApplyLocalization()
+        {
+            lblTitle.Text = Localizer.GetString("WizardUsbSelection.Title");
+            lblDriveLabel.Text = Localizer.GetString("WizardUsbSelection.DriveLabel");
+            btnRefresh.Text = Localizer.GetString("WizardUsbSelection.RefreshButton");
+            lblSelected.Text = Localizer.GetString("WizardUsbSelection.NoUsbSelected");
+            btnNext.Text = Localizer.GetString("WizardUsbSelection.ContinueButton");
+            btnBack.Text = Localizer.GetString("WizardUsbSelection.BackButton");
         }
 
         private void ApplyCardBorders()

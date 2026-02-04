@@ -16,6 +16,7 @@ namespace BlossomPrepTool
         public WizardSettingsView()
         {
             InitializeComponent();
+            ApplyLocalization();
             ApplyRoundedCorners();
             FixLabelTransparency();
             this.SizeChanged += (s, e) => 
@@ -24,6 +25,15 @@ namespace BlossomPrepTool
                 Invalidate();
             };
             ApplyCardBorders();
+        }
+
+        private void ApplyLocalization()
+        {
+            lblTitle.Text = Localizer.GetString("WizardSettings.Title");
+            lblDescription.Text = Localizer.GetString("WizardSettings.Description");
+            lblStatus.Text = Localizer.GetString("WizardSettings.Status");
+            btnNext.Text = Localizer.GetString("WizardSettings.ApplyButton");
+            btnBack.Text = Localizer.GetString("WizardSettings.BackButton");
         }
 
         private void ApplyCardBorders()

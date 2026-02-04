@@ -16,6 +16,7 @@ namespace BlossomPrepTool
         public WizardWinBTRFSView()
         {
             InitializeComponent();
+            ApplyLocalization();
             ApplyRoundedCorners();
             FixLabelTransparency();
             this.SizeChanged += (s, e) => 
@@ -24,6 +25,15 @@ namespace BlossomPrepTool
                 Invalidate();
             };
             ApplyCardBorders();
+        }
+
+        private void ApplyLocalization()
+        {
+            lblTitle.Text = Localizer.GetString("WizardWinBTRFS.Title");
+            lblDescription.Text = Localizer.GetString("WizardWinBTRFS.Description");
+            lblStatus.Text = Localizer.GetString("WizardWinBTRFS.Status");
+            btnNext.Text = Localizer.GetString("WizardWinBTRFS.InstallButton");
+            btnBack.Text = Localizer.GetString("WizardWinBTRFS.BackButton");
         }
 
         private void ApplyCardBorders()

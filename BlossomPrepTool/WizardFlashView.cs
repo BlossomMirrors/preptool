@@ -19,6 +19,7 @@ namespace BlossomPrepTool
         public WizardFlashView()
         {
             InitializeComponent();
+            ApplyLocalization();
             ApplyRoundedCorners();
             FixLabelTransparency();
             this.SizeChanged += (s, e) => 
@@ -27,6 +28,13 @@ namespace BlossomPrepTool
                 Invalidate();
             };
             ApplyCardBorders();
+        }
+
+        private void ApplyLocalization()
+        {
+            lblTitle.Text = Localizer.GetString("WizardFlash.Title");
+            lblDescription.Text = Localizer.GetString("WizardFlash.Description");
+            lblStatus.Text = Localizer.GetString("WizardFlash.Status");
         }
 
         private void ApplyCardBorders()

@@ -135,8 +135,8 @@ namespace BlossomPrepTool
             };
             wizardCompleteView.RebootClicked += (s, e) =>
             {
-                if (MessageBox.Show("This will reboot your computer into UEFI firmware settings. Continue?", 
-                    "Confirm Reboot", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show(Localizer.GetString("Message.RebootToUefi"), 
+                    Localizer.GetString("MessageBox.ConfirmReboot"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     _preptool.RebootToUEFI();
                 }
@@ -426,7 +426,7 @@ namespace BlossomPrepTool
         {
             if (wizardUsbSelectionView.DriveComboBox.SelectedIndex < 0)
             {
-                MessageBox.Show("Please select a USB drive first", "No Drive Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Localizer.GetString("Message.NoUsbSelected"), Localizer.GetString("MessageBox.NoUsbSelected"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 GoToStep(WizardStep.USBSelection);
                 return;
             }
@@ -509,7 +509,7 @@ namespace BlossomPrepTool
         {
             if (wizardUsbSelectionView.DriveComboBox.SelectedIndex < 0)
             {
-                MessageBox.Show("Please select a USB drive", "No Drive Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Localizer.GetString("Message.NoUsbSelected"), Localizer.GetString("MessageBox.NoUsbSelected"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -520,12 +520,12 @@ namespace BlossomPrepTool
 
             if (!System.IO.File.Exists(isoPath))
             {
-                MessageBox.Show("ISO file not found. Please download or select an ISO first.", "ISO Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Localizer.GetString("Message.IsoNotFound"), Localizer.GetString("MessageBox.IsoNotFound"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (MessageBox.Show($"This will erase all data on Disk {selectedDrive.DiskNumber}. Continue?",
-                "Confirm USB Flash", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            if (MessageBox.Show(Localizer.GetString("Message.EraseUsbWarning", selectedDrive.DiskNumber),
+                Localizer.GetString("MessageBox.ConfirmUsbFlash"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 return;
 
             // Disable UI during flashing
@@ -637,7 +637,7 @@ namespace BlossomPrepTool
         {
             if (!double.TryParse(wizardPartitionView.AllocateTextBox.Text, out double allocateGB) || allocateGB < 20)
             {
-                MessageBox.Show("Please enter a valid size (minimum 20 GB recommended)", "Invalid Size", 
+                MessageBox.Show(Localizer.GetString("Message.InvalidPartitionSize"), Localizer.GetString("MessageBox.InvalidSize"), 
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }

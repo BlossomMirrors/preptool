@@ -38,6 +38,7 @@ namespace BlossomPrepTool
         public WizardIsoSourceView()
         {
             InitializeComponent();
+            ApplyLocalization();
             ApplyRoundedCards();
             FixLabelTransparency();
             WireUpEvents();
@@ -47,6 +48,21 @@ namespace BlossomPrepTool
                 LayoutCards();
                 Invalidate();
             };
+        }
+
+        private void ApplyLocalization()
+        {
+            lblTitle.Text = Localizer.GetString("WizardIsoSource.Title");
+            lblDownloadTitle.Text = Localizer.GetString("WizardIsoSource.DownloadTitle");
+            lblDownloadDesc.Text = Localizer.GetString("WizardIsoSource.DownloadDesc");
+            btnDownload.Text = Localizer.GetString("WizardIsoSource.DownloadButton");
+            lblUseOwnTitle.Text = Localizer.GetString("WizardIsoSource.UseOwnTitle");
+            lblUseOwnDesc.Text = Localizer.GetString("WizardIsoSource.UseOwnDesc");
+            btnUseOwn.Text = Localizer.GetString("WizardIsoSource.UseOwnButton");
+            lblRestoreTitle.Text = Localizer.GetString("WizardIsoSource.RestoreTitle");
+            lblRestoreDesc.Text = Localizer.GetString("WizardIsoSource.RestoreDesc");
+            btnRestore.Text = Localizer.GetString("WizardIsoSource.RestoreButton");
+            btnBack.Text = Localizer.GetString("WizardIsoSource.BackButton");
         }
 
         private void LayoutCards()

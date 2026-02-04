@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Willkommensseite -->
+  <data name="WizardWelcome.Title" xml:space="preserve">
+    <value>BlossomOS Switch</value>
+  </data>
+  <data name="WizardWelcome.Label" xml:space="preserve">
+    <value>WILLKOMMEN</value>
+  </data>
+  <data name="WizardWelcome.Description" xml:space="preserve">
+    <value>Bereite dein System für die Installation von BlossomOS mit diesem benutzerfreundlichen Tool vor.
+Folge den Schritten für eine reibungslose Installation.</value>
+  </data>
+  <data name="WizardWelcome.ManualSetupTitle" xml:space="preserve">
+    <value>Installiere die BlossomOS-Wiederherstellungsumgebung
+auf einem vorhandenen USB-Laufwerk</value>
+  </data>
+  <data name="WizardWelcome.ManualSetupDesc" xml:space="preserve">
+    <value>Nur schnelle USB-Einrichtung</value>
+  </data>
+  <data name="WizardWelcome.ManualSetupButton" xml:space="preserve">
+    <value>Manuelle Einrichtung</value>
+  </data>
+  <data name="WizardWelcome.GetStartedTitle" xml:space="preserve">
+    <value>Bereite dein System vor und installiere die Wiederherstellungsumgebung
+auf dein USB-Laufwerk.</value>
+  </data>
+  <data name="WizardWelcome.GetStartedDesc" xml:space="preserve">
+    <value>Komplette Einrichtung mit Systemkonfiguration</value>
+  </data>
+  <data name="WizardWelcome.GetStartedButton" xml:space="preserve">
+    <value>Los geht's</value>
+  </data>
+  <!-- Modusauswahl -->
+  <data name="WizardModeSelection.Title" xml:space="preserve">
+    <value>Einrichtungsmodus wählen</value>
+  </data>
+  <data name="WizardModeSelection.SimpleMode" xml:space="preserve">
+    <value>Nur USB flashen</value>
+  </data>
+  <data name="WizardModeSelection.DualBootMode" xml:space="preserve">
+    <value>Dual-Boot-Einrichtung</value>
+  </data>
+  <!-- Abbild-Quelle -->
+  <data name="WizardIsoSource.Title" xml:space="preserve">
+    <value>Was möchtest du tun?</value>
+  </data>
+  <data name="WizardIsoSource.DownloadTitle" xml:space="preserve">
+    <value>BlossomOS Abbild herunterladen</value>
+  </data>
+  <data name="WizardIsoSource.DownloadDesc" xml:space="preserve">
+    <value>Lade die neueste BlossomOS-
+Wiederherstellungsumgebungsabbild von unseren
+Servern herunter</value>
+  </data>
+  <data name="WizardIsoSource.DownloadButton" xml:space="preserve">
+    <value>Abbild herunterladen</value>
+  </data>
+  <data name="WizardIsoSource.UseOwnTitle" xml:space="preserve">
+    <value>Mein eigenes Abbild verwenden</value>
+  </data>
+  <data name="WizardIsoSource.UseOwnDesc" xml:space="preserve">
+    <value>Ich habe bereits eine BlossomOS Abbild-Datei
+auf meinem Computer</value>
+  </data>
+  <data name="WizardIsoSource.UseOwnButton" xml:space="preserve">
+    <value>Abbild-Datei auswählen</value>
+  </data>
+  <data name="WizardIsoSource.RestoreTitle" xml:space="preserve">
+    <value>USB-Laufwerk wiederherstellen</value>
+  </data>
+  <data name="WizardIsoSource.RestoreDesc" xml:space="preserve">
+    <value>Konvertiere ein BlossomOS USB-Laufwerk zurück zu
+einem normalen Windows USB-Laufwerk</value>
+  </data>
+  <data name="WizardIsoSource.RestoreButton" xml:space="preserve">
+    <value>USB wiederherstellen</value>
+  </data>
+  <data name="WizardIsoSource.BackButton" xml:space="preserve">
+    <value>← Zurück</value>
+  </data>
+  <!-- USB-Auswahl -->
+  <data name="WizardUsbSelection.Title" xml:space="preserve">
+    <value>USB-Laufwerk wählen</value>
+  </data>
+  <data name="WizardUsbSelection.DriveLabel" xml:space="preserve">
+    <value>Wähle dein USB-Laufwerk:</value>
+  </data>
+  <data name="WizardUsbSelection.RefreshButton" xml:space="preserve">
+    <value>⟳ Aktualisieren</value>
+  </data>
+  <data name="WizardUsbSelection.NoUsbSelected" xml:space="preserve">
+    <value>Kein USB ausgewählt</value>
+  </data>
+  <data name="WizardUsbSelection.ContinueButton" xml:space="preserve">
+    <value>Weiter →</value>
+  </data>
+  <data name="WizardUsbSelection.BackButton" xml:space="preserve">
+    <value>← Zurück</value>
+  </data>
+  <!-- Partitionierung -->
+  <data name="WizardPartition.Title" xml:space="preserve">
+    <value>Speicherplatz zuweisen</value>
+  </data>
+  <data name="WizardPartition.Description" xml:space="preserve">
+    <value>Wähle, wie viel Speicherplatz von deinem C:-Laufwerk für BlossomOS reserviert werden soll.</value>
+  </data>
+  <data name="WizardPartition.DiskInfo" xml:space="preserve">
+    <value>Lade Laufwerkinformationen...</value>
+  </data>
+  <data name="WizardPartition.AllocateLabel" xml:space="preserve">
+    <value>Speicherplatz für BlossomOS:</value>
+  </data>
+  <data name="WizardPartition.DefaultSize" xml:space="preserve">
+    <value>50</value>
+  </data>
+  <data name="WizardPartition.GBLabel" xml:space="preserve">
+    <value>GB</value>
+  </data>
+  <data name="WizardPartition.Status" xml:space="preserve">
+    <value>Mindestens empfohlen: 50 GB</value>
+  </data>
+  <data name="WizardPartition.NextButton" xml:space="preserve">
+    <value>Weiter →</value>
+  </data>
+  <data name="WizardPartition.BackButton" xml:space="preserve">
+    <value>← Zurück</value>
+  </data>
+  <!-- Flash -->
+  <data name="WizardFlash.Title" xml:space="preserve">
+    <value>USB-Laufwerk flashen</value>
+  </data>
+  <data name="WizardFlash.Description" xml:space="preserve">
+    <value>Dies schreibt das Abbild auf dein USB-Laufwerk. Alle Daten werden gelöscht.</value>
+  </data>
+  <data name="WizardFlash.Status" xml:space="preserve">
+    <value>Bereit</value>
+  </data>
+  <!-- Einstellungen -->
+  <data name="WizardSettings.Title" xml:space="preserve">
+    <value>Systemeinstellungen</value>
+  </data>
+  <data name="WizardSettings.Description" xml:space="preserve">
+    <value>Konfiguriere Systemeinstellungen für Dual-Boot-Kompatibilität:
+
+• Stelle die Systemuhr auf UTC (erforderlich für Linux)
+• Deaktiviere schnelles Herunterfahren (verhindert Partitionszugriffsprobleme)</value>
+  </data>
+  <data name="WizardSettings.Status" xml:space="preserve">
+    <value>Bereit, Einstellungen zu konfigurieren</value>
+  </data>
+  <data name="WizardSettings.ApplyButton" xml:space="preserve">
+    <value>Einstellungen anwenden</value>
+  </data>
+  <data name="WizardSettings.BackButton" xml:space="preserve">
+    <value>← Zurück</value>
+  </data>
+  <!-- WinBTRFS -->
+  <data name="WizardWinBTRFS.Title" xml:space="preserve">
+    <value>WinBtrfs installieren</value>
+  </data>
+  <data name="WizardWinBTRFS.Description" xml:space="preserve">
+    <value>WinBtrfs ist erforderlich, um von Windows aus auf BlossomOS-Partitionen zuzugreifen.
+
+Dies installiert den Dateisystemtreiber, der Windows ermöglicht, Btrfs-Partitionen zu lesen und zu beschreiben.</value>
+  </data>
+  <data name="WizardWinBTRFS.Status" xml:space="preserve">
+    <value>Bereit, WinBtrfs zu installieren</value>
+  </data>
+  <data name="WizardWinBTRFS.InstallButton" xml:space="preserve">
+    <value>Installieren</value>
+  </data>
+  <data name="WizardWinBTRFS.BackButton" xml:space="preserve">
+    <value>← Zurück</value>
+  </data>
+  <!-- Download -->
+  <data name="WizardDownload.Title" xml:space="preserve">
+    <value>Abbild herunterladen</value>
+  </data>
+  <data name="WizardDownload.Status" xml:space="preserve">
+    <value>Bereit zum Herunterladen</value>
+  </data>
+  <!-- Abgeschlossen -->
+  <data name="WizardComplete.Title" xml:space="preserve">
+    <value>Einrichtung abgeschlossen!</value>
+  </data>
+  <!-- Allgemeine Schaltflächen -->
+  <data name="Common.BackButton" xml:space="preserve">
+    <value>← Zurück</value>
+  </data>
+  <data name="Common.NextButton" xml:space="preserve">
+    <value>Weiter →</value>
+  </data>
+  <!-- Meldungsfeld-Titel -->
+  <data name="MessageBox.ConfirmReboot" xml:space="preserve">
+    <value>Neustart bestätigen</value>
+  </data>
+  <data name="MessageBox.NoUsbSelected" xml:space="preserve">
+    <value>Kein Laufwerk ausgewählt</value>
+  </data>
+  <data name="MessageBox.IsoNotFound" xml:space="preserve">
+    <value>Abbild nicht gefunden</value>
+  </data>
+  <data name="MessageBox.ConfirmUsbFlash" xml:space="preserve">
+    <value>USB-Flash bestätigen</value>
+  </data>
+  <data name="MessageBox.InvalidSize" xml:space="preserve">
+    <value>Ungültige Größe</value>
+  </data>
+  <data name="MessageBox.ConfirmPartitionResize" xml:space="preserve">
+    <value>Größenänderung der Partition bestätigen</value>
+  </data>
+  <data name="MessageBox.ConfirmInstallation" xml:space="preserve">
+    <value>Installation bestätigen</value>
+  </data>
+  <!-- Meldungsfeld-Nachrichten -->
+  <data name="Message.RebootToUefi" xml:space="preserve">
+    <value>Dies startet deinen Computer in die UEFI-Firmware-Einstellungen neu. Fortfahren?</value>
+  </data>
+  <data name="Message.EraseUsbWarning" xml:space="preserve">
+    <value>Dies löscht alle Daten auf Datenträger {0}. Fortfahren?</value>
+  </data>
+  <data name="Message.NoUsbSelected" xml:space="preserve">
+    <value>Bitte wähle zuerst ein USB-Laufwerk aus</value>
+  </data>
+  <data name="Message.IsoNotFound" xml:space="preserve">
+    <value>Abbild-Datei nicht gefunden. Bitte lade ein Abbild herunter oder wähle eines aus.</value>
+  </data>
+  <data name="Message.IsoNotFoundSimple" xml:space="preserve">
+    <value>Abbild-Datei nicht gefunden. Bitte lade sie zuerst herunter.</value>
+  </data>
+  <data name="Message.InvalidPartitionSize" xml:space="preserve">
+    <value>Bitte gib eine gültige Größe ein (mindestens 20 GB empfohlen)</value>
+  </data>
+  <data name="Message.PartitionResizeWarning" xml:space="preserve">
+    <value>Dies ändert die Größe deiner C:-Laufwerk-Partition. Stelle sicher, dass du eine Sicherung deiner wichtigen Daten hast. Fortfahren?</value>
+  </data>
+  <data name="Message.InstallWinBtrfs" xml:space="preserve">
+    <value>Dies installiert WinBtrfs über Chocolatey.
+Fortfahren?</value>
+  </data>
+</root>

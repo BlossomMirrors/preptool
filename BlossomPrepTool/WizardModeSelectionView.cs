@@ -11,7 +11,15 @@ namespace BlossomPrepTool
         public WizardModeSelectionView()
         {
             InitializeComponent();
+            ApplyLocalization();
             lblModeTitle.BackColor = this.BackColor;
+        }
+
+        private void ApplyLocalization()
+        {
+            lblModeTitle.Text = Localizer.GetString("WizardModeSelection.Title");
+            btnSimpleMode.Text = Localizer.GetString("WizardModeSelection.SimpleMode");
+            btnDualBootMode.Text = Localizer.GetString("WizardModeSelection.DualBootMode");
         }
 
         private void btnSimpleMode_Click(object sender, EventArgs e)

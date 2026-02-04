@@ -35,6 +35,7 @@ namespace BlossomPrepTool
         public WizardWelcomeView()
         {
             InitializeComponent();
+            ApplyLocalization();
             ApplyRoundedCards();
             FixLabelTransparency();
             WireUpEvents();
@@ -290,6 +291,19 @@ namespace BlossomPrepTool
             this.cardRight.ResumeLayout(false);
             this.cardRight.PerformLayout();
             this.ResumeLayout(false);
+        }
+
+        private void ApplyLocalization()
+        {
+            this.lblWelcome.Text = Localizer.GetString("WizardWelcome.Label");
+            this.lblTitle.Text = Localizer.GetString("WizardWelcome.Title");
+            this.lblDescription.Text = Localizer.GetString("WizardWelcome.Description");
+            this.lblManualTitle.Text = Localizer.GetString("WizardWelcome.ManualSetupTitle");
+            this.lblManualDesc.Text = Localizer.GetString("WizardWelcome.ManualSetupDesc");
+            this.btnManualSetup.Text = Localizer.GetString("WizardWelcome.ManualSetupButton");
+            this.lblGetStartedTitle.Text = Localizer.GetString("WizardWelcome.GetStartedTitle");
+            this.lblGetStartedDesc.Text = Localizer.GetString("WizardWelcome.GetStartedDesc");
+            this.btnGetStarted.Text = Localizer.GetString("WizardWelcome.GetStartedButton");
         }
     }
 }

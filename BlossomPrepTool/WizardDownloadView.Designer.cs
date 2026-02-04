@@ -30,13 +30,13 @@ namespace BlossomPrepTool
         {
             this.cardMain = new System.Windows.Forms.Panel();
             this.lblStatus = new System.Windows.Forms.Label();
+            this.progressBar = new BlossomPrepTool.RoundProgressBar();
             this.lblTitle = new System.Windows.Forms.Label();
             this.downloadActionsPanel = new System.Windows.Forms.Panel();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnPause = new System.Windows.Forms.Button();
             this.btnBack = new System.Windows.Forms.Button();
             this.btnNext = new System.Windows.Forms.Button();
-            this.progressBar = new BlossomPrepTool.RoundProgressBar();
             this.cardMain.SuspendLayout();
             this.downloadActionsPanel.SuspendLayout();
             this.SuspendLayout();
@@ -69,6 +69,16 @@ namespace BlossomPrepTool
             this.lblStatus.TabIndex = 2;
             this.lblStatus.Text = "Ready";
             this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar.Location = new System.Drawing.Point(60, 150);
+            this.progressBar.Maximum = 100;
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(600, 40);
+            this.progressBar.TabIndex = 1;
+            this.progressBar.Value = 0;
             // 
             // lblTitle
             // 
@@ -172,18 +182,6 @@ namespace BlossomPrepTool
             this.btnNext.Text = "Continue →";
             this.btnNext.UseVisualStyleBackColor = false;
             this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
-            // 
-            // progressBar
-            // 
-            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar.Location = new System.Drawing.Point(260, 90);
-            this.progressBar.Maximum = 100;
-            this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(200, 200);
-            this.progressBar.TabIndex = 1;
-            this.progressBar.Value = 0;
             // 
             // WizardDownloadView
             // 

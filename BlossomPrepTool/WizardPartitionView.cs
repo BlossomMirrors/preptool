@@ -18,6 +18,7 @@ namespace BlossomPrepTool
         public WizardPartitionView()
         {
             InitializeComponent();
+            ApplyLocalization();
             ApplyRoundedCorners();
             FixLabelTransparency();
             this.SizeChanged += (s, e) => 
@@ -26,6 +27,18 @@ namespace BlossomPrepTool
                 Invalidate();
             };
             ApplyCardBorders();
+        }
+
+        private void ApplyLocalization()
+        {
+            lblTitle.Text = Localizer.GetString("WizardPartition.Title");
+            lblDescription.Text = Localizer.GetString("WizardPartition.Description");
+            lblDiskInfo.Text = Localizer.GetString("WizardPartition.DiskInfo");
+            lblAllocateLabel.Text = Localizer.GetString("WizardPartition.AllocateLabel");
+            lblGBLabel.Text = Localizer.GetString("WizardPartition.GBLabel");
+            lblStatus.Text = Localizer.GetString("WizardPartition.Status");
+            btnNext.Text = Localizer.GetString("WizardPartition.NextButton");
+            btnBack.Text = Localizer.GetString("WizardPartition.BackButton");
         }
 
         private void ApplyCardBorders()

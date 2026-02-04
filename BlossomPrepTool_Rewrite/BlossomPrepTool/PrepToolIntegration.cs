@@ -17,6 +17,7 @@ namespace BlossomPrepTool
         private WinBTRFSManager _winbtrfsManager;
 
         public event EventHandler<EventArgs> StatusChanged;
+        public event EventHandler<ISODownloadProgressEventArgs> DownloadProgress;
 
         public PrepToolIntegration()
         {
@@ -29,8 +30,12 @@ namespace BlossomPrepTool
             _usbFlashManager.ProgressUpdate += (s, e) => OnStatusChanged($"[{e.Status}] {e.Message}");
             _partitionManager.ProgressUpdate += (s, e) => OnStatusChanged($"[{e.Status}] {e.Message}");
             _winbtrfsManager.ProgressUpdate += (s, e) => OnStatusChanged($"[{e.Status}] {e.Message}");
-            _isoManager.DownloadProgress += (s, e) => OnStatusChanged(
-                $"ISO Download: {e.BytesDownloaded / (1024.0 * 1024.0):F2}MB / {e.TotalBytes / (1024.0 * 1024.0):F2}MB ({e.ProgressPercentage}%)");
+            _isoManager.DownloadProgress += (s, e) => 
+            {
+                OnStatusChanged(
+                    $"ISO Download: {e.BytesDownloaded / (1024.0 * 1024.0):F2}MB / {e.TotalBytes / (1024.0 * 1024.0):F2}MB ({e.ProgressPercentage}%)");
+                DownloadProgress?.Invoke(this, e);
+            };
         }
 
         /// <summary>
@@ -75,6 +80,24 @@ namespace BlossomPrepTool
         {
             _isoManager.CancelDownload();
             OnStatusChanged("ISO download cancelled");
+        }
+
+        /// <summary>
+        /// Pause ISO download
+        /// </summary>
+        public void PauseISODownload()
+        {
+            _isoManager.PauseDownload();
+            OnStatusChanged("ISO download paused");
+        }
+
+        /// <summary>
+        /// Resume ISO download
+        /// </summary>
+        public void ResumeISODownload()
+        {
+            _isoManager.ResumeDownload();
+            OnStatusChanged("ISO download resumed");
         }
 
         /// <summary>

@@ -32,6 +32,12 @@
             this.close = new System.Windows.Forms.PictureBox();
             this.maximize_normalize = new System.Windows.Forms.PictureBox();
             this.minimize = new System.Windows.Forms.PictureBox();
+            this.wizardWelcomeView = new BlossomPrepTool.WizardWelcomeView();
+            this.wizardModeSelectionView = new BlossomPrepTool.WizardModeSelectionView();
+            this.wizardUsbSelectionView = new BlossomPrepTool.WizardUsbSelectionView();
+            this.wizardDownloadView = new BlossomPrepTool.WizardDownloadView();
+            this.wizardFlashView = new BlossomPrepTool.WizardFlashView();
+            this.wizardCompleteView = new BlossomPrepTool.WizardCompleteView();
             this.btnDownloadISO = new System.Windows.Forms.Button();
             this.btnFlashUSB = new System.Windows.Forms.Button();
             this.btnResizePartition = new System.Windows.Forms.Button();
@@ -88,6 +94,60 @@
             this.minimize.TabIndex = 2;
             this.minimize.TabStop = false;
             this.minimize.Click += new System.EventHandler(this.pictureBox3_Click);
+            // 
+            // wizardWelcomeView
+            // 
+            this.wizardWelcomeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardWelcomeView.Location = new System.Drawing.Point(10, 30);
+            this.wizardWelcomeView.Name = "wizardWelcomeView";
+            this.wizardWelcomeView.Size = new System.Drawing.Size(790, 580);
+            this.wizardWelcomeView.TabIndex = 100;
+            this.wizardWelcomeView.Visible = false;
+            // 
+            // wizardModeSelectionView
+            // 
+            this.wizardModeSelectionView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardModeSelectionView.Location = new System.Drawing.Point(10, 30);
+            this.wizardModeSelectionView.Name = "wizardModeSelectionView";
+            this.wizardModeSelectionView.Size = new System.Drawing.Size(790, 580);
+            this.wizardModeSelectionView.TabIndex = 100;
+            this.wizardModeSelectionView.Visible = false;
+            // 
+            // wizardUsbSelectionView
+            // 
+            this.wizardUsbSelectionView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardUsbSelectionView.Location = new System.Drawing.Point(10, 30);
+            this.wizardUsbSelectionView.Name = "wizardUsbSelectionView";
+            this.wizardUsbSelectionView.Size = new System.Drawing.Size(790, 580);
+            this.wizardUsbSelectionView.TabIndex = 101;
+            this.wizardUsbSelectionView.Visible = false;
+            // 
+            // wizardDownloadView
+            // 
+            this.wizardDownloadView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardDownloadView.Location = new System.Drawing.Point(10, 30);
+            this.wizardDownloadView.Name = "wizardDownloadView";
+            this.wizardDownloadView.Size = new System.Drawing.Size(790, 580);
+            this.wizardDownloadView.TabIndex = 102;
+            this.wizardDownloadView.Visible = false;
+            // 
+            // wizardFlashView
+            // 
+            this.wizardFlashView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardFlashView.Location = new System.Drawing.Point(10, 30);
+            this.wizardFlashView.Name = "wizardFlashView";
+            this.wizardFlashView.Size = new System.Drawing.Size(790, 580);
+            this.wizardFlashView.TabIndex = 103;
+            this.wizardFlashView.Visible = false;
+            // 
+            // wizardCompleteView
+            // 
+            this.wizardCompleteView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardCompleteView.Location = new System.Drawing.Point(10, 30);
+            this.wizardCompleteView.Name = "wizardCompleteView";
+            this.wizardCompleteView.Size = new System.Drawing.Size(790, 580);
+            this.wizardCompleteView.TabIndex = 104;
+            this.wizardCompleteView.Visible = false;
             // 
             // btnDownloadISO
             // 
@@ -265,6 +325,12 @@
             this.Controls.Add(this.cmbUSBDrives);
             this.Controls.Add(this.lblUSBDrives);
             this.Controls.Add(this.lblISOStatus);
+            this.Controls.Add(this.wizardCompleteView);
+            this.Controls.Add(this.wizardFlashView);
+            this.Controls.Add(this.wizardDownloadView);
+            this.Controls.Add(this.wizardUsbSelectionView);
+            this.Controls.Add(this.wizardModeSelectionView);
+            this.Controls.Add(this.wizardWelcomeView);
             this.Controls.Add(this.btnDownloadISO);
             this.Controls.Add(this.minimize);
             this.Controls.Add(this.maximize_normalize);
@@ -294,6 +360,12 @@
         private System.Windows.Forms.PictureBox close;
         private System.Windows.Forms.PictureBox maximize_normalize;
         private System.Windows.Forms.PictureBox minimize;
+        private WizardWelcomeView wizardWelcomeView;
+        private WizardModeSelectionView wizardModeSelectionView;
+        private WizardUsbSelectionView wizardUsbSelectionView;
+        private WizardDownloadView wizardDownloadView;
+        private WizardFlashView wizardFlashView;
+        private WizardCompleteView wizardCompleteView;
         private System.Windows.Forms.Button btnDownloadISO;
         private System.Windows.Forms.Label lblISOStatus;
         private System.Windows.Forms.Label lblUSBDrives;

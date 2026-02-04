@@ -26,7 +26,7 @@ namespace BlossomPrepTool
         // Dark Theme Colors
         private readonly Color DarkBg = Color.FromArgb(20, 20, 23);
         private readonly Color DarkPanel = Color.FromArgb(33, 33, 38);
-        private readonly Color AccentColor = Color.FromArgb(168, 85, 247);
+        private readonly Color AccentColor = Color.FromArgb(92, 100, 255);
         private readonly Color TextColor = Color.FromArgb(229, 229, 231);
         private readonly Color TextSecondary = Color.FromArgb(161, 161, 170);
         private readonly Color SuccessColor = Color.FromArgb(34, 197, 94);
@@ -51,22 +51,18 @@ namespace BlossomPrepTool
         private const int FADE_DURATION_MS = 100;
         private const int FADE_TIMER_INTERVAL = 15;
         private const int RESIZE_HANDLE_SIZE = 10;
-        
+
         private PrepToolIntegration _preptool;
         private Dictionary<int, USBInfo> _usbDiskMap = new Dictionary<int, USBInfo>();
         private CancellationTokenSource _cancellationTokenSource;
-        
+
         private Size previousSize;
         private Point previousLocation;
         private bool mouseDown;
         private Point lastLocation;
-        
-        // Wizard State
-        private enum WizardMode { None, Simple, DualBoot }
-        private WizardMode _currentMode = WizardMode.None;
+
         private int _completedSteps = 0;
 
-        // Loading Spinner
         private System.Windows.Forms.Timer _spinnerTimer;
         private int _spinnerFrame = 0;
         private readonly string[] _spinnerFrames = new[] { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
@@ -74,25 +70,30 @@ namespace BlossomPrepTool
         public Main()
         {
             InitializeComponent();
-            
+
             this.SetStyle(ControlStyles.ResizeRedraw, true);
             this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             this.SetStyle(ControlStyles.UserPaint, true);
             this.SetStyle(ControlStyles.DoubleBuffer, true);
             this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
-            
+
             this.BackColor = DarkBg;
-            
+
             Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 20, 20));
-            
+
             _preptool = new PrepToolIntegration();
-            
+
             InitializeFadeStates();
             ApplyDarkTheme();
             SetupButtonHoverEffects();
+            InitializeWizardPages();
+
+            // Hide all designer controls - wizard mode only
+            HideAllDesignerControls();
             
-            btnRefreshUSB_Click(null, null);
+            ShowStep(_currentStep);
         }
+
 
         private void InitializeFadeStates()
         {
@@ -130,7 +131,7 @@ namespace BlossomPrepTool
         private void FadeTimer_Tick(ButtonFadeState state)
         {
             float increment = (float)FADE_TIMER_INTERVAL / FADE_DURATION_MS;
-            
+
             if (state.FadingToHover)
             {
                 state.Progress += increment;
@@ -149,7 +150,7 @@ namespace BlossomPrepTool
                     state.Timer.Stop();
                 }
             }
-            
+
             if (state.Control != null && state.NormalImage != null && state.HoverImage != null)
             {
                 state.Control.BackgroundImage = BlendImages(state.NormalImage, state.HoverImage, state.Progress);
@@ -160,29 +161,29 @@ namespace BlossomPrepTool
         {
             if (progress <= 0f) return normal;
             if (progress >= 1f) return hover;
-            
+
             Bitmap result = new Bitmap(normal.Width, normal.Height);
             using (Graphics g = Graphics.FromImage(result))
             {
                 g.CompositingMode = CompositingMode.SourceOver;
-                
+
                 ColorMatrix normalMatrix = new ColorMatrix();
                 normalMatrix.Matrix33 = 1f - progress;
                 ImageAttributes normalAttributes = new ImageAttributes();
                 normalAttributes.SetColorMatrix(normalMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                
+
                 g.DrawImage(normal, new Rectangle(0, 0, normal.Width, normal.Height),
                            0, 0, normal.Width, normal.Height, GraphicsUnit.Pixel, normalAttributes);
-                
+
                 ColorMatrix hoverMatrix = new ColorMatrix();
                 hoverMatrix.Matrix33 = progress;
                 ImageAttributes hoverAttributes = new ImageAttributes();
                 hoverAttributes.SetColorMatrix(hoverMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                
+
                 g.DrawImage(hover, new Rectangle(0, 0, hover.Width, hover.Height),
                            0, 0, hover.Width, hover.Height, GraphicsUnit.Pixel, hoverAttributes);
             }
-            
+
             return result;
         }
 
@@ -245,10 +246,10 @@ namespace BlossomPrepTool
         {
             close.MouseEnter += (s, e) => StartFade(closeFadeState, true);
             close.MouseLeave += (s, e) => StartFade(closeFadeState, false);
-            
+
             maximize_normalize.MouseEnter += (s, e) =>
             {
-                bool isMaximized = this.Size.Width == Screen.PrimaryScreen.WorkingArea.Width && 
+                bool isMaximized = this.Size.Width == Screen.PrimaryScreen.WorkingArea.Width &&
                                    this.Size.Height == Screen.PrimaryScreen.WorkingArea.Height;
                 maximizeFadeState.NormalImage = isMaximized ? WindowControls.normalize : WindowControls.maximize;
                 maximizeFadeState.HoverImage = isMaximized ? WindowControls.normalize_hover : WindowControls.maximize_hover;
@@ -256,20 +257,20 @@ namespace BlossomPrepTool
             };
             maximize_normalize.MouseLeave += (s, e) =>
             {
-                bool isMaximized = this.Size.Width == Screen.PrimaryScreen.WorkingArea.Width && 
+                bool isMaximized = this.Size.Width == Screen.PrimaryScreen.WorkingArea.Width &&
                                    this.Size.Height == Screen.PrimaryScreen.WorkingArea.Height;
                 maximizeFadeState.NormalImage = isMaximized ? WindowControls.normalize : WindowControls.maximize;
                 maximizeFadeState.HoverImage = isMaximized ? WindowControls.normalize_hover : WindowControls.maximize_hover;
                 StartFade(maximizeFadeState, false);
             };
-            
+
             minimize.MouseEnter += (s, e) => StartFade(minimizeFadeState, true);
             minimize.MouseLeave += (s, e) => StartFade(minimizeFadeState, false);
 
             // Regular button hover for other buttons
             foreach (Control ctrl in GetAllControls(this))
             {
-                if (ctrl is Button btn && btn != btnDownloadISO && btn != btnFlashUSB && 
+                if (ctrl is Button btn && btn != btnDownloadISO && btn != btnFlashUSB &&
                     btn != btnResizePartition && btn != btnInstallWinBTRFS)
                 {
                     btn.MouseEnter += (s, e) => btn.BackColor = Color.FromArgb(60, 60, 70);
@@ -426,7 +427,7 @@ namespace BlossomPrepTool
             };
 
             e.Graphics.DrawPath(pen, path);
-            
+
             path.Dispose();
             pen.Dispose();
         }
@@ -434,16 +435,16 @@ namespace BlossomPrepTool
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            
+
             if (Region != null)
             {
                 Region.Dispose();
             }
-            
+
             Region = Region.FromHrgn(
                 CreateRoundRectRgn(0, 0, Width + 3, Height + 2, 20, 20)
             );
-            
+
             this.Invalidate();
         }
 
@@ -770,7 +771,7 @@ namespace BlossomPrepTool
         private void pictureBox2_Click(object sender, EventArgs e)
         {
             Rectangle workingRectangle = Screen.PrimaryScreen.WorkingArea;
-               
+
             if (this.Size.Width == workingRectangle.Width && this.Size.Height == workingRectangle.Height)
             {
                 this.FormBorderStyle = FormBorderStyle.None;

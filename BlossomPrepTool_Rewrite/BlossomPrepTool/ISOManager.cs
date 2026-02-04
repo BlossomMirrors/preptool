@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using System.Net;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace BlossomPrepTool
 {
@@ -25,6 +25,8 @@ namespace BlossomPrepTool
 
         private string _cacheDirectory;
         private CancellationTokenSource _cancellationTokenSource;
+        private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true);
+        private volatile bool _isPaused;
 
         public event EventHandler<ISODownloadProgressEventArgs> DownloadProgress;
         public event EventHandler<EventArgs> DownloadCompleted;
@@ -84,42 +86,42 @@ namespace BlossomPrepTool
                 if (File.Exists(isoPath))
                     File.Delete(isoPath);
 
-                using (var client = new WebClient())
+                using (var httpClient = new HttpClient())
+                using (var response = await httpClient.GetAsync(ISOUrl, HttpCompletionOption.ResponseHeadersRead, _cancellationTokenSource.Token))
                 {
-                    client.DownloadProgressChanged += (s, e) =>
+                    response.EnsureSuccessStatusCode();
+                    var totalBytes = response.Content.Headers.ContentLength ?? 0;
+
+                    using (var contentStream = await response.Content.ReadAsStreamAsync())
+                    using (var fileStream = new FileStream(isoPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true))
                     {
-                        if (_cancellationTokenSource.Token.IsCancellationRequested)
-                        {
-                            client.CancelAsync();
-                            return;
-                        }
+                        var buffer = new byte[81920];
+                        long totalRead = 0;
+                        int bytesRead;
 
-                        DownloadProgress?.Invoke(this, new ISODownloadProgressEventArgs
+                        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, _cancellationTokenSource.Token)) > 0)
                         {
-                            BytesDownloaded = e.BytesReceived,
-                            TotalBytes = e.TotalBytesToReceive
-                        });
-                    };
+                            _pauseEvent.Wait(_cancellationTokenSource.Token);
 
-                    client.DownloadFileCompleted += (s, e) =>
-                    {
-                        if (e.Cancelled)
-                        {
-                            DownloadCancelled?.Invoke(this, EventArgs.Empty);
-                        }
-                        else if (e.Error != null)
-                        {
-                            // Delete incomplete file
-                            try { File.Delete(isoPath); } catch { }
-                        }
-                        else
-                        {
-                            DownloadCompleted?.Invoke(this, EventArgs.Empty);
-                        }
-                    };
+                            await fileStream.WriteAsync(buffer, 0, bytesRead, _cancellationTokenSource.Token);
+                            totalRead += bytesRead;
 
-                    await client.DownloadFileTaskAsync(ISOUrl, isoPath);
+                            DownloadProgress?.Invoke(this, new ISODownloadProgressEventArgs
+                            {
+                                BytesDownloaded = totalRead,
+                                TotalBytes = totalBytes
+                            });
+                        }
+                    }
                 }
+
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    DownloadCancelled?.Invoke(this, EventArgs.Empty);
+                    throw new OperationCanceledException();
+                }
+
+                DownloadCompleted?.Invoke(this, EventArgs.Empty);
 
                 // Verify after download
                 var verified = await CheckCachedISO();
@@ -127,6 +129,12 @@ namespace BlossomPrepTool
                     throw new Exception("ISO verification failed after download");
 
                 return isoPath;
+            }
+            catch (OperationCanceledException)
+            {
+                try { File.Delete(isoPath); } catch { }
+                DownloadCancelled?.Invoke(this, EventArgs.Empty);
+                throw;
             }
             catch
             {
@@ -139,15 +147,34 @@ namespace BlossomPrepTool
         public void CancelDownload()
         {
             _cancellationTokenSource?.Cancel();
+            _pauseEvent.Set();
+            _isPaused = false;
         }
+
+        public void PauseDownload()
+        {
+            if (_cancellationTokenSource == null || _cancellationTokenSource.IsCancellationRequested)
+                return;
+
+            _isPaused = true;
+            _pauseEvent.Reset();
+        }
+
+        public void ResumeDownload()
+        {
+            _isPaused = false;
+            _pauseEvent.Set();
+        }
+
+        public bool IsPaused => _isPaused;
 
         private async Task<string> GetExpectedSHA256()
         {
             try
             {
-                using (var client = new WebClient())
+                using (var client = new HttpClient())
                 {
-                    var content = await Task.Run(() => client.DownloadString(SHA256Url));
+                    var content = await client.GetStringAsync(SHA256Url);
                     var parts = content.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
                     return parts.Length > 0 ? parts[0] : null;
                 }

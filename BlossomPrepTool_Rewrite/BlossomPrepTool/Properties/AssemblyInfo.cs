@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // Allgemeine Informationen über eine Assembly werden über die folgenden
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die einer Assembly zugeordnet sind.
-[assembly: AssemblyTitle("BlossomPrepTool")]
+[assembly: AssemblyTitle("Blossom Switch")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Dockur")]
-[assembly: AssemblyProduct("BlossomPrepTool")]
-[assembly: AssemblyCopyright("Copyright © Dockur 2025")]
+[assembly: AssemblyCompany("Blossom")]
+[assembly: AssemblyProduct("Blossom Switch")]
+[assembly: AssemblyCopyright("Copyright © Blossom 2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

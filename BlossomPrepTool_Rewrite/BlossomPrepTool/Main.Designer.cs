@@ -35,6 +35,7 @@
             this.wizardWelcomeView = new BlossomPrepTool.WizardWelcomeView();
             this.wizardModeSelectionView = new BlossomPrepTool.WizardModeSelectionView();
             this.wizardUsbSelectionView = new BlossomPrepTool.WizardUsbSelectionView();
+            this.wizardIsoSourceView = new BlossomPrepTool.WizardIsoSourceView();
             this.wizardDownloadView = new BlossomPrepTool.WizardDownloadView();
             this.wizardFlashView = new BlossomPrepTool.WizardFlashView();
             this.wizardCompleteView = new BlossomPrepTool.WizardCompleteView();
@@ -121,6 +122,15 @@
             this.wizardUsbSelectionView.Size = new System.Drawing.Size(790, 580);
             this.wizardUsbSelectionView.TabIndex = 101;
             this.wizardUsbSelectionView.Visible = false;
+            // 
+            // wizardIsoSourceView
+            // 
+            this.wizardIsoSourceView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardIsoSourceView.Location = new System.Drawing.Point(10, 30);
+            this.wizardIsoSourceView.Name = "wizardIsoSourceView";
+            this.wizardIsoSourceView.Size = new System.Drawing.Size(790, 580);
+            this.wizardIsoSourceView.TabIndex = 105;
+            this.wizardIsoSourceView.Visible = false;
             // 
             // wizardDownloadView
             // 
@@ -328,6 +338,7 @@
             this.Controls.Add(this.wizardCompleteView);
             this.Controls.Add(this.wizardFlashView);
             this.Controls.Add(this.wizardDownloadView);
+            this.Controls.Add(this.wizardIsoSourceView);
             this.Controls.Add(this.wizardUsbSelectionView);
             this.Controls.Add(this.wizardModeSelectionView);
             this.Controls.Add(this.wizardWelcomeView);
@@ -363,6 +374,7 @@
         private WizardWelcomeView wizardWelcomeView;
         private WizardModeSelectionView wizardModeSelectionView;
         private WizardUsbSelectionView wizardUsbSelectionView;
+        private WizardIsoSourceView wizardIsoSourceView;
         private WizardDownloadView wizardDownloadView;
         private WizardFlashView wizardFlashView;
         private WizardCompleteView wizardCompleteView;

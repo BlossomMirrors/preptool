@@ -132,6 +132,12 @@
     <Compile Include="WizardUsbSelectionView.Designer.cs">
       <DependentUpon>WizardUsbSelectionView.cs</DependentUpon>
     </Compile>
+    <Compile Include="WizardIsoSourceView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WizardIsoSourceView.Designer.cs">
+      <DependentUpon>WizardIsoSourceView.cs</DependentUpon>
+    </Compile>
     <Compile Include="WizardDownloadView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -177,6 +183,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WizardUsbSelectionView.resx">
       <DependentUpon>WizardUsbSelectionView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WizardIsoSourceView.resx">
+      <DependentUpon>WizardIsoSourceView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WizardDownloadView.resx">
       <DependentUpon>WizardDownloadView.cs</DependentUpon>

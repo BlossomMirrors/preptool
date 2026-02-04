@@ -9,10 +9,11 @@ namespace BlossomPrepTool
     {
         // Wizard State
         private enum WizardMode { None, Simple, DualBoot }
-        private enum WizardStep { Welcome, ModeSelection, USBSelection, Download, Flash, Partition, WinBTRFS, Complete }
+        private enum WizardStep { Welcome, ModeSelection, USBSelection, ISOSource, Download, Flash, Partition, WinBTRFS, Complete }
         private WizardMode _currentMode = WizardMode.None;
         private WizardStep _currentStep = WizardStep.Welcome;
         private bool _isDownloadPaused;
+        private string _selectedISOPath;
 
         private void HideAllDesignerControls()
         {
@@ -21,8 +22,8 @@ namespace BlossomPrepTool
             {
                 if (ctrl == close || ctrl == maximize_normalize || ctrl == minimize ||
                     ctrl == wizardModeSelectionView || ctrl == wizardUsbSelectionView ||
-                    ctrl == wizardDownloadView || ctrl == wizardFlashView ||
-                    ctrl == wizardCompleteView)
+                    ctrl == wizardIsoSourceView || ctrl == wizardDownloadView || 
+                    ctrl == wizardFlashView || ctrl == wizardCompleteView)
                 {
                     continue;
                 }
@@ -72,11 +73,25 @@ namespace BlossomPrepTool
                 }
             };
 
-            wizardUsbSelectionView.NextClicked += (s, e) => GoToStep(WizardStep.Download);
+            wizardUsbSelectionView.NextClicked += (s, e) =>
+            {
+                if (_currentMode == WizardMode.Simple)
+                {
+                    GoToStep(WizardStep.ISOSource);
+                }
+                else
+                {
+                    GoToStep(WizardStep.Download);
+                }
+            };
             wizardUsbSelectionView.BackClicked += (s, e) => GoToStep(WizardStep.Welcome);
 
             wizardWelcomeView.ManualSetupClicked += (s, e) => SelectMode(WizardMode.Simple);
             wizardWelcomeView.GetStartedClicked += (s, e) => SelectMode(WizardMode.DualBoot);
+
+            wizardIsoSourceView.DownloadClicked += (s, e) => GoToStep(WizardStep.Download);
+            wizardIsoSourceView.UseOwnClicked += (s, e) => SelectOwnISO();
+            wizardIsoSourceView.BackClicked += (s, e) => GoToStep(WizardStep.USBSelection);
 
             wizardDownloadView.NextClicked += (s, e) => GoToStep(WizardStep.Flash);
             wizardDownloadView.PauseClicked += (s, e) => ToggleDownloadPause();
@@ -107,6 +122,7 @@ namespace BlossomPrepTool
             // Hide all panels
             wizardModeSelectionView.Visible = false;
             wizardUsbSelectionView.Visible = false;
+            wizardIsoSourceView.Visible = false;
             wizardDownloadView.Visible = false;
             wizardFlashView.Visible = false;
             wizardCompleteView.Visible = false;
@@ -122,6 +138,9 @@ namespace BlossomPrepTool
                     break;
                 case WizardStep.USBSelection:
                     wizardUsbSelectionView.Visible = true;
+                    break;
+                case WizardStep.ISOSource:
+                    wizardIsoSourceView.Visible = true;
                     break;
                 case WizardStep.Download:
                     wizardDownloadView.Visible = true;
@@ -291,6 +310,43 @@ namespace BlossomPrepTool
             _isDownloadPaused = false;
         }
 
+        private void SelectOwnISO()
+        {
+            using (var openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "ISO files (*.iso)|*.iso|All files (*.*)|*.*";
+                openFileDialog.Title = "Select BlossomOS ISO file";
+                openFileDialog.CheckFileExists = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    _selectedISOPath = openFileDialog.FileName;
+                    
+                    // Verify it's a valid file
+                    var fileInfo = new System.IO.FileInfo(_selectedISOPath);
+                    if (fileInfo.Length < 1024 * 1024 * 100) // Less than 100MB is suspicious
+                    {
+                        var result = MessageBox.Show(
+                            "The selected file seems unusually small for a BlossomOS ISO. Are you sure this is the correct file?",
+                            "Confirm ISO File",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Warning);
+                        
+                        if (result == DialogResult.No)
+                        {
+                            _selectedISOPath = null;
+                            return;
+                        }
+                    }
+                    
+                    LogMessage($"User selected ISO: {_selectedISOPath}");
+                    
+                    // Skip directly to flash step
+                    GoToStep(WizardStep.Flash);
+                }
+            }
+        }
+
         private async void ExecuteFlashUSB()
         {
             if (wizardUsbSelectionView.DriveComboBox.SelectedIndex < 0)
@@ -300,11 +356,13 @@ namespace BlossomPrepTool
             }
 
             var selectedDrive = _usbDiskMap[wizardUsbSelectionView.DriveComboBox.SelectedIndex];
-            var isoPath = _preptool.GetISOPath();
+            
+            // Use selected ISO if available, otherwise use downloaded ISO
+            var isoPath = !string.IsNullOrEmpty(_selectedISOPath) ? _selectedISOPath : _preptool.GetISOPath();
 
             if (!System.IO.File.Exists(isoPath))
             {
-                MessageBox.Show("ISO file not found. Please download it first.", "ISO Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("ISO file not found. Please download or select an ISO first.", "ISO Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 

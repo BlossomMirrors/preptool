@@ -295,4 +295,30 @@ Dies installiert den Dateisystemtreiber, der Windows ermöglicht, Btrfs-Partitio
     <value>Dies installiert WinBtrfs über Chocolatey.
 Fortfahren?</value>
   </data>
+  
+  <!-- Zusätzliche Schaltflächen -->
+  <data name="Button.Pause" xml:space="preserve">
+    <value>Pausieren</value>
+  </data>
+  <data name="Button.Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Button.StartFlash" xml:space="preserve">
+    <value>Flashen starten</value>
+  </data>
+  <data name="Button.Finish" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="Button.RebootToUEFI" xml:space="preserve">
+    <value>In UEFI neu starten</value>
+  </data>
+  <data name="Button.Refresh" xml:space="preserve">
+    <value>⟳ Aktualisieren</value>
+  </data>
+  <data name="Button.Install" xml:space="preserve">
+    <value>Installieren</value>
+  </data>
+  <data name="Button.ApplySettings" xml:space="preserve">
+    <value>Einstellungen anwenden</value>
+  </data>
 </root>

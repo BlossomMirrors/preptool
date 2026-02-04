@@ -15,6 +15,7 @@ namespace BlossomPrepTool
         public WizardCompleteView()
         {
             InitializeComponent();
+            ApplyLocalization();
             ApplyRoundedCorners();
             FixLabelTransparency();
             LoadQRCode();
@@ -25,6 +26,12 @@ namespace BlossomPrepTool
             };
             EnableAntialiasing();
             ApplyCardBorders();
+        }
+
+        private void ApplyLocalization()
+        {
+            btnFinish.Text = Localizer.GetString("Button.Finish");
+            btnReboot.Text = Localizer.GetString("Button.RebootToUEFI");
         }
 
         private void EnableAntialiasing()

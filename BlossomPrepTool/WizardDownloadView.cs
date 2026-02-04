@@ -22,6 +22,7 @@ namespace BlossomPrepTool
         public WizardDownloadView()
         {
             InitializeComponent();
+            ApplyLocalization();
             ApplyRoundedCorners();
             FixLabelTransparency();
             this.SizeChanged += (s, e) => 
@@ -30,6 +31,16 @@ namespace BlossomPrepTool
                 Invalidate();
             };
             ApplyCardBorders();
+        }
+
+        private void ApplyLocalization()
+        {
+            lblTitle.Text = Localizer.GetString("WizardDownload.Title");
+            lblStatus.Text = Localizer.GetString("WizardDownload.Status");
+            btnNext.Text = Localizer.GetString("Common.NextButton");
+            btnBack.Text = Localizer.GetString("WizardIsoSource.BackButton");
+            btnPause.Text = Localizer.GetString("Button.Pause");
+            btnCancel.Text = Localizer.GetString("Button.Cancel");
         }
 
         private void ApplyCardBorders()

@@ -294,4 +294,30 @@ This will install the file system driver that allows Windows to read and write B
     <value>This will install winbtrfs via Chocolatey.
 Continue?</value>
   </data>
+  
+  <!-- Additional Buttons -->
+  <data name="Button.Pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="Button.Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Button.StartFlash" xml:space="preserve">
+    <value>Start Flash</value>
+  </data>
+  <data name="Button.Finish" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="Button.RebootToUEFI" xml:space="preserve">
+    <value>Reboot to UEFI</value>
+  </data>
+  <data name="Button.Refresh" xml:space="preserve">
+    <value>⟳ Refresh</value>
+  </data>
+  <data name="Button.Install" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="Button.ApplySettings" xml:space="preserve">
+    <value>Apply Settings</value>
+  </data>
 </root>

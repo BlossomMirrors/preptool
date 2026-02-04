@@ -35,6 +35,8 @@ namespace BlossomPrepTool
             lblTitle.Text = Localizer.GetString("WizardFlash.Title");
             lblDescription.Text = Localizer.GetString("WizardFlash.Description");
             lblStatus.Text = Localizer.GetString("WizardFlash.Status");
+            btnStart.Text = Localizer.GetString("Button.StartFlash");
+            btnBack.Text = Localizer.GetString("WizardIsoSource.BackButton");
         }
 
         private void ApplyCardBorders()

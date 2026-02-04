@@ -49,26 +49,23 @@ namespace BlossomPrepTool
 
         private async Task<bool> EnsureChocoInstalled()
         {
-            return await Task.Run(() =>
+            try
             {
-                try
+                if (ChocolateyInstaller.IsInstalled())
                 {
-                    var chocoPath = GetChocoPath();
-                    if (!string.IsNullOrEmpty(chocoPath))
-                    {
-                        ReportProgress($"Chocolatey detected: {chocoPath}", "success");
-                        return true;
-                    }
+                    var chocoPath = ChocolateyInstaller.GetChocoPath();
+                    ReportProgress($"Chocolatey detected: {chocoPath}", "success");
+                    return true;
+                }
 
-                    ReportProgress("Installing Chocolatey...", "info");
-                    return InstallChocolatey();
-                }
-                catch (Exception ex)
-                {
-                    ReportProgress($"Chocolatey check failed: {ex.Message}", "error");
-                    return false;
-                }
-            });
+                ReportProgress("Installing Chocolatey...", "info");
+                return await ChocolateyInstaller.InstallChocolatey(msg => ReportProgress(msg, "info"));
+            }
+            catch (Exception ex)
+            {
+                ReportProgress($"Chocolatey check failed: {ex.Message}", "error");
+                return false;
+            }
         }
 
         private async Task<bool> IsWinBTRFSInstalled()
@@ -77,12 +74,7 @@ namespace BlossomPrepTool
             {
                 try
                 {
-                    var chocoPath = GetChocoPath();
-                    if (string.IsNullOrEmpty(chocoPath))
-                        return false;
-
-                    var output = RunCommand(chocoPath, "list --local-only --exact winbtrfs");
-                    return output.IndexOf("winbtrfs", StringComparison.OrdinalIgnoreCase) >= 0;
+                    return ChocolateyInstaller.IsPackageInstalled("winbtrfs");
                 }
                 catch
                 {
@@ -97,37 +89,10 @@ namespace BlossomPrepTool
             {
                 try
                 {
-                    var chocoPath = GetChocoPath();
-                    if (string.IsNullOrEmpty(chocoPath))
+                    if (!ChocolateyInstaller.IsInstalled())
                         throw new Exception("Chocolatey not found");
 
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = chocoPath,
-                        Arguments = $"install {packageName} -y",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    };
-
-                    using (var process = Process.Start(psi))
-                    {
-                        var output = process.StandardOutput.ReadToEnd();
-                        var error = process.StandardError.ReadToEnd();
-                        process.WaitForExit();
-
-                        ReportProgress(output, "info");
-
-                        if (process.ExitCode != 0)
-                        {
-                            ReportProgress($"Installation failed: {error}", "error");
-                            return false;
-                        }
-
-                        ReportProgress($"{packageName} installed successfully", "success");
-                        return true;
-                    }
+                    return ChocolateyInstaller.InstallPackage(packageName, msg => ReportProgress(msg, "info"));
                 }
                 catch (Exception ex)
                 {
@@ -135,79 +100,6 @@ namespace BlossomPrepTool
                     return false;
                 }
             });
-        }
-
-        private bool InstallChocolatey()
-        {
-            try
-            {
-                var tempDir = Path.Combine(Path.GetTempPath(), "chocoInstall");
-                Directory.CreateDirectory(tempDir);
-                var scriptPath = Path.Combine(tempDir, "install.ps1");
-
-                ReportProgress("Downloading Chocolatey installer...", "info");
-
-                // Download Chocolatey installer
-                using (var client = new System.Net.WebClient())
-                {
-                    client.DownloadFile(
-                        "https://community.chocolatey.org/install.ps1",
-                        scriptPath);
-                }
-
-                ReportProgress("Executing Chocolatey installer...", "info");
-
-                // Execute installer with proper shell handling
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                };
-
-                using (var process = Process.Start(psi))
-                {
-                    var output = process.StandardOutput.ReadToEnd();
-                    var error = process.StandardError.ReadToEnd();
-                    process.WaitForExit();
-
-                    ReportProgress(output, "info");
-
-                    if (process.ExitCode != 0)
-                    {
-                        ReportProgress($"Chocolatey installation failed: {error}", "error");
-                        return false;
-                    }
-
-                    ReportProgress("Chocolatey installed successfully", "success");
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                ReportProgress($"Chocolatey installation error: {ex.Message}", "error");
-                return false;
-            }
-        }
-
-        private string GetChocoPath()
-        {
-            try
-            {
-                var result = RunCommand("where.exe", "choco");
-                if (!string.IsNullOrEmpty(result))
-                    return result.Trim().Split('\n')[0]; // Get first result in case of multiple
-            }
-            catch { }
-
-            var fallback = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "chocolatey", "bin", "choco.exe");
-
-            return File.Exists(fallback) ? fallback : null;
         }
 
         private string RunCommand(string filename, string arguments)

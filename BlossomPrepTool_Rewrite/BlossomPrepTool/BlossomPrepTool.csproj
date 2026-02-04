@@ -161,10 +161,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>WindowControls.resx</DependentUpon>
     </Compile>
-    <Compile Include="PowerShellRunner.cs" />
+    <Compile Include="ChocolateyInstaller.cs" />
     <Compile Include="USBUtilities.cs" />
     <Compile Include="ISOManager.cs" />
     <Compile Include="USBFlashManager.cs" />
+    <Compile Include="USBRestoreManager.cs" />
     <Compile Include="PartitionManager.cs" />
     <Compile Include="WinBTRFSManager.cs" />
     <Compile Include="PrepToolIntegration.cs" />

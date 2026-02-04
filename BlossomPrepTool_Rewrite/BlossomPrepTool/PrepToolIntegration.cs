@@ -13,6 +13,7 @@ namespace BlossomPrepTool
     {
         private ISOManager _isoManager;
         private USBFlashManager _usbFlashManager;
+        private USBRestoreManager _usbRestoreManager;
         private PartitionManager _partitionManager;
         private WinBTRFSManager _winbtrfsManager;
 
@@ -23,11 +24,13 @@ namespace BlossomPrepTool
         {
             _isoManager = new ISOManager();
             _usbFlashManager = new USBFlashManager();
+            _usbRestoreManager = new USBRestoreManager();
             _partitionManager = new PartitionManager();
             _winbtrfsManager = new WinBTRFSManager();
 
             // Hook up event handlers
             _usbFlashManager.ProgressUpdate += (s, e) => OnStatusChanged($"[{e.Status}] {e.Message}");
+            _usbRestoreManager.ProgressUpdate += (s, e) => OnStatusChanged($"[{e.Status}] {e.Message}");
             _partitionManager.ProgressUpdate += (s, e) => OnStatusChanged($"[{e.Status}] {e.Message}");
             _winbtrfsManager.ProgressUpdate += (s, e) => OnStatusChanged($"[{e.Status}] {e.Message}");
             _isoManager.DownloadProgress += (s, e) => 
@@ -187,6 +190,28 @@ namespace BlossomPrepTool
             catch (Exception ex)
             {
                 OnStatusChanged($"winbtrfs installation error: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Restore USB drive back to normal Windows USB format
+        /// </summary>
+        public async Task<bool> RestoreUSB(int diskNumber)
+        {
+            OnStatusChanged($"Starting USB restore for disk {diskNumber}...");
+            try
+            {
+                var result = await _usbRestoreManager.RestoreUSB(diskNumber);
+                if (result)
+                    OnStatusChanged("USB restore completed successfully");
+                else
+                    OnStatusChanged("USB restore failed");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                OnStatusChanged($"USB restore error: {ex.Message}");
                 throw;
             }
         }

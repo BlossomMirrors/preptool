@@ -11,6 +11,10 @@ namespace BlossomPrepTool
         public event EventHandler BackClicked;
 
         public Label StatusLabel => lblStatus;
+        public Label TitleLabel => lblTitle;
+        public Label DescriptionLabel => lblDescription;
+        public Button StartButton => btnStart;
+        public Button BackButton => btnBack;
 
         public WizardFlashView()
         {

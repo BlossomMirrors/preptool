@@ -8,13 +8,17 @@ namespace BlossomPrepTool
     {
         private Panel cardDownload;
         private Panel cardUseOwn;
+        private Panel cardRestore;
         private Button btnDownload;
         private Button btnUseOwn;
+        private Button btnRestore;
         private Button btnBack;
         private Label lblDownloadTitle;
         private Label lblDownloadDesc;
         private Label lblUseOwnTitle;
         private Label lblUseOwnDesc;
+        private Label lblRestoreTitle;
+        private Label lblRestoreDesc;
         private Label lblTitle;
 
         // Theme colors
@@ -27,6 +31,7 @@ namespace BlossomPrepTool
 
         public event EventHandler DownloadClicked;
         public event EventHandler UseOwnClicked;
+        public event EventHandler RestoreClicked;
         public event EventHandler BackClicked;
 
         public WizardIsoSourceView()
@@ -41,8 +46,10 @@ namespace BlossomPrepTool
         {
             this.cardDownload.Region = new System.Drawing.Region(RoundedRectangle(new Rectangle(0, 0, cardDownload.Width, cardDownload.Height), 12));
             this.cardUseOwn.Region = new System.Drawing.Region(RoundedRectangle(new Rectangle(0, 0, cardUseOwn.Width, cardUseOwn.Height), 12));
+            this.cardRestore.Region = new System.Drawing.Region(RoundedRectangle(new Rectangle(0, 0, cardRestore.Width, cardRestore.Height), 12));
             this.btnDownload.Region = new System.Drawing.Region(RoundedRectangle(new Rectangle(0, 0, btnDownload.Width, btnDownload.Height), 8));
             this.btnUseOwn.Region = new System.Drawing.Region(RoundedRectangle(new Rectangle(0, 0, btnUseOwn.Width, btnUseOwn.Height), 8));
+            this.btnRestore.Region = new System.Drawing.Region(RoundedRectangle(new Rectangle(0, 0, btnRestore.Width, btnRestore.Height), 8));
             this.btnBack.Region = new System.Drawing.Region(RoundedRectangle(new Rectangle(0, 0, btnBack.Width, btnBack.Height), 8));
         }
 
@@ -53,15 +60,19 @@ namespace BlossomPrepTool
             lblDownloadDesc.Parent = cardDownload;
             lblUseOwnTitle.Parent = cardUseOwn;
             lblUseOwnDesc.Parent = cardUseOwn;
+            lblRestoreTitle.Parent = cardRestore;
+            lblRestoreDesc.Parent = cardRestore;
         }
 
         private void WireUpEvents()
         {
             this.btnDownload.Click += (s, e) => DownloadClicked?.Invoke(this, EventArgs.Empty);
             this.btnUseOwn.Click += (s, e) => UseOwnClicked?.Invoke(this, EventArgs.Empty);
+            this.btnRestore.Click += (s, e) => RestoreClicked?.Invoke(this, EventArgs.Empty);
             this.btnBack.Click += (s, e) => BackClicked?.Invoke(this, EventArgs.Empty);
             this.cardDownload.Click += (s, e) => DownloadClicked?.Invoke(this, EventArgs.Empty);
             this.cardUseOwn.Click += (s, e) => UseOwnClicked?.Invoke(this, EventArgs.Empty);
+            this.cardRestore.Click += (s, e) => RestoreClicked?.Invoke(this, EventArgs.Empty);
         }
 
         private System.Drawing.Drawing2D.GraphicsPath RoundedRectangle(Rectangle bounds, int radius)
@@ -100,13 +111,18 @@ namespace BlossomPrepTool
             this.lblUseOwnTitle = new System.Windows.Forms.Label();
             this.lblUseOwnDesc = new System.Windows.Forms.Label();
             this.btnUseOwn = new System.Windows.Forms.Button();
+            this.cardRestore = new System.Windows.Forms.Panel();
+            this.lblRestoreTitle = new System.Windows.Forms.Label();
+            this.lblRestoreDesc = new System.Windows.Forms.Label();
+            this.btnRestore = new System.Windows.Forms.Button();
             this.btnBack = new System.Windows.Forms.Button();
             this.cardDownload.SuspendLayout();
             this.cardUseOwn.SuspendLayout();
+            this.cardRestore.SuspendLayout();
             this.SuspendLayout();
             
             // lblTitle
-            this.lblTitle.Text = "Do you have a BlossomOS ISO?";
+            this.lblTitle.Text = "What would you like to do?";
             this.lblTitle.Font = new System.Drawing.Font("Georgia", 24F, System.Drawing.FontStyle.Bold);
             this.lblTitle.ForeColor = TextColor;
             this.lblTitle.AutoSize = true;
@@ -116,7 +132,7 @@ namespace BlossomPrepTool
             // cardDownload
             this.cardDownload.BackColor = CardBg;
             this.cardDownload.Location = new System.Drawing.Point(40, 120);
-            this.cardDownload.Size = new System.Drawing.Size(340, 280);
+            this.cardDownload.Size = new System.Drawing.Size(240, 280);
             this.cardDownload.Padding = new System.Windows.Forms.Padding(0);
             this.cardDownload.Cursor = Cursors.Hand;
             this.cardDownload.Controls.Add(this.lblDownloadTitle);
@@ -141,11 +157,11 @@ namespace BlossomPrepTool
             
             // btnDownload
             this.btnDownload.Text = "Download ISO";
-            this.btnDownload.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.btnDownload.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.btnDownload.ForeColor = TextColor;
             this.btnDownload.BackColor = DarkPanel;
             this.btnDownload.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnDownload.Size = new System.Drawing.Size(280, 45);
+            this.btnDownload.Size = new System.Drawing.Size(180, 45);
             this.btnDownload.Location = new System.Drawing.Point(30, 210);
             this.btnDownload.FlatAppearance.BorderSize = 1;
             this.btnDownload.FlatAppearance.BorderColor = Color.FromArgb(80, 80, 88);
@@ -155,8 +171,8 @@ namespace BlossomPrepTool
             
             // cardUseOwn
             this.cardUseOwn.BackColor = CardBg;
-            this.cardUseOwn.Location = new System.Drawing.Point(420, 120);
-            this.cardUseOwn.Size = new System.Drawing.Size(340, 280);
+            this.cardUseOwn.Location = new System.Drawing.Point(300, 120);
+            this.cardUseOwn.Size = new System.Drawing.Size(240, 280);
             this.cardUseOwn.Padding = new System.Windows.Forms.Padding(0);
             this.cardUseOwn.Cursor = Cursors.Hand;
             this.cardUseOwn.Controls.Add(this.lblUseOwnTitle);
@@ -181,16 +197,55 @@ namespace BlossomPrepTool
             
             // btnUseOwn
             this.btnUseOwn.Text = "Select ISO file";
-            this.btnUseOwn.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.btnUseOwn.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.btnUseOwn.ForeColor = Color.White;
             this.btnUseOwn.BackColor = DarkPanel;
             this.btnUseOwn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnUseOwn.Size = new System.Drawing.Size(280, 45);
+            this.btnUseOwn.Size = new System.Drawing.Size(180, 45);
             this.btnUseOwn.Location = new System.Drawing.Point(30, 210);
             this.btnUseOwn.FlatAppearance.BorderSize = 0;
             this.btnUseOwn.FlatAppearance.MouseDownBackColor = AccentColor;
             this.btnUseOwn.FlatAppearance.MouseOverBackColor = DarkPanel;
             this.btnUseOwn.Cursor = Cursors.Hand;
+            
+            // cardRestore
+            this.cardRestore.BackColor = CardBg;
+            this.cardRestore.Location = new System.Drawing.Point(560, 120);
+            this.cardRestore.Size = new System.Drawing.Size(240, 280);
+            this.cardRestore.Padding = new System.Windows.Forms.Padding(0);
+            this.cardRestore.Cursor = Cursors.Hand;
+            this.cardRestore.Controls.Add(this.lblRestoreTitle);
+            this.cardRestore.Controls.Add(this.lblRestoreDesc);
+            this.cardRestore.Controls.Add(this.btnRestore);
+            
+            // lblRestoreTitle
+            this.lblRestoreTitle.Text = "Restore USB drive";
+            this.lblRestoreTitle.Font = new System.Drawing.Font("Georgia", 14F, System.Drawing.FontStyle.Bold);
+            this.lblRestoreTitle.ForeColor = TextColor;
+            this.lblRestoreTitle.AutoSize = true;
+            this.lblRestoreTitle.Location = new System.Drawing.Point(30, 40);
+            this.lblRestoreTitle.BackColor = Color.Transparent;
+            
+            // lblRestoreDesc
+            this.lblRestoreDesc.Text = "Revert a BlossomOS USB back to\na normal Windows USB drive";
+            this.lblRestoreDesc.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblRestoreDesc.ForeColor = TextSecondary;
+            this.lblRestoreDesc.AutoSize = true;
+            this.lblRestoreDesc.Location = new System.Drawing.Point(30, 80);
+            this.lblRestoreDesc.BackColor = Color.Transparent;
+            
+            // btnRestore
+            this.btnRestore.Text = "Restore USB";
+            this.btnRestore.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btnRestore.ForeColor = Color.White;
+            this.btnRestore.BackColor = DarkPanel;
+            this.btnRestore.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRestore.Size = new System.Drawing.Size(180, 45);
+            this.btnRestore.Location = new System.Drawing.Point(30, 210);
+            this.btnRestore.FlatAppearance.BorderSize = 0;
+            this.btnRestore.FlatAppearance.MouseDownBackColor = AccentColor;
+            this.btnRestore.FlatAppearance.MouseOverBackColor = DarkPanel;
+            this.btnRestore.Cursor = Cursors.Hand;
             
             // btnBack
             this.btnBack.Text = "← Back";
@@ -209,6 +264,7 @@ namespace BlossomPrepTool
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.cardDownload);
             this.Controls.Add(this.cardUseOwn);
+            this.Controls.Add(this.cardRestore);
             this.Controls.Add(this.btnBack);
             this.Name = "WizardIsoSourceView";
             this.Size = new System.Drawing.Size(800, 520);
@@ -216,6 +272,8 @@ namespace BlossomPrepTool
             this.cardDownload.PerformLayout();
             this.cardUseOwn.ResumeLayout(false);
             this.cardUseOwn.PerformLayout();
+            this.cardRestore.ResumeLayout(false);
+            this.cardRestore.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
         }

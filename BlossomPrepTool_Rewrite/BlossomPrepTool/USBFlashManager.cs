@@ -78,26 +78,23 @@ namespace BlossomPrepTool
 
         private async Task<bool> EnsureChocoInstalled()
         {
-            return await Task.Run(() =>
+            try
             {
-                try
+                if (ChocolateyInstaller.IsInstalled())
                 {
-                    var chocoPath = GetChocoPath();
-                    if (!string.IsNullOrEmpty(chocoPath))
-                    {
-                        ReportProgress($"Chocolatey detected: {chocoPath}", "success");
-                        return true;
-                    }
+                    var chocoPath = ChocolateyInstaller.GetChocoPath();
+                    ReportProgress($"Chocolatey detected: {chocoPath}", "success");
+                    return true;
+                }
 
-                    ReportProgress("Installing Chocolatey...", "info");
-                    return InstallChocolatey();
-                }
-                catch (Exception ex)
-                {
-                    ReportProgress($"Chocolatey check failed: {ex.Message}", "warning");
-                    return false;
-                }
-            });
+                ReportProgress("Installing Chocolatey...", "info");
+                return await ChocolateyInstaller.InstallChocolatey(msg => ReportProgress(msg, "info"));
+            }
+            catch (Exception ex)
+            {
+                ReportProgress($"Chocolatey check failed: {ex.Message}", "warning");
+                return false;
+            }
         }
 
         private async Task<bool> EnsureDDInstalled()
@@ -106,22 +103,21 @@ namespace BlossomPrepTool
             {
                 try
                 {
-                    var chocoPath = GetChocoPath();
-                    if (string.IsNullOrEmpty(chocoPath))
+                    if (!ChocolateyInstaller.IsInstalled())
                         return false;
 
                     // Check if dd is installed
-                    var output = RunCommand(chocoPath, "list --local-only --exact dd");
-                    if (output.Contains("dd"))
+                    if (ChocolateyInstaller.IsPackageInstalled("dd"))
                     {
                         ReportProgress("dd already installed", "success");
                         return true;
                     }
 
                     ReportProgress("Installing dd...", "info");
-                    output = RunCommand(chocoPath, "install dd -y");
-                    ReportProgress("dd installed", "success");
-                    return true;
+                    bool result = ChocolateyInstaller.InstallPackage("dd", msg => ReportProgress(msg, "info"));
+                    if (result)
+                        ReportProgress("dd installed", "success");
+                    return result;
                 }
                 catch (Exception ex)
                 {
@@ -228,21 +224,6 @@ namespace BlossomPrepTool
             });
         }
 
-        private string GetChocoPath()
-        {
-            try
-            {
-                var result = RunCommand("where.exe", "choco");
-                if (!string.IsNullOrEmpty(result))
-                    return result.Trim();
-            }
-            catch { }
-
-            var fallback = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "chocolatey", "bin", "choco.exe");
-            return File.Exists(fallback) ? fallback : null;
-        }
-
         private string GetDDPath()
         {
             try
@@ -254,44 +235,6 @@ namespace BlossomPrepTool
             catch { }
 
             return null;
-        }
-
-        private bool InstallChocolatey()
-        {
-            try
-            {
-                var tempDir = Path.Combine(Path.GetTempPath(), "chocoInstall");
-                Directory.CreateDirectory(tempDir);
-                var scriptPath = Path.Combine(tempDir, "install.ps1");
-
-                // Download Chocolatey installer
-                using (var client = new System.Net.WebClient())
-                {
-                    client.DownloadFile(
-                        "https://community.chocolatey.org/install.ps1",
-                        scriptPath);
-                }
-
-                // Execute installer
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using (var process = Process.Start(psi))
-                {
-                    process.WaitForExit();
-                    return process.ExitCode == 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                ReportProgress($"Chocolatey installation error: {ex.Message}", "error");
-                return false;
-            }
         }
 
         private string RunCommand(string filename, string arguments)

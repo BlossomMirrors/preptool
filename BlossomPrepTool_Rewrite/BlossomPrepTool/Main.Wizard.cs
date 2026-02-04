@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,6 +15,7 @@ namespace BlossomPrepTool
         private WizardStep _currentStep = WizardStep.Welcome;
         private bool _isDownloadPaused;
         private string _selectedISOPath;
+        private bool _isRestoreMode;
 
         private void HideAllDesignerControls()
         {
@@ -91,6 +93,7 @@ namespace BlossomPrepTool
 
             wizardIsoSourceView.DownloadClicked += (s, e) => GoToStep(WizardStep.Download);
             wizardIsoSourceView.UseOwnClicked += (s, e) => SelectOwnISO();
+            wizardIsoSourceView.RestoreClicked += (s, e) => RestoreUSB();
             wizardIsoSourceView.BackClicked += (s, e) => GoToStep(WizardStep.USBSelection);
 
             wizardDownloadView.NextClicked += (s, e) => GoToStep(WizardStep.Flash);
@@ -98,7 +101,19 @@ namespace BlossomPrepTool
             wizardDownloadView.CancelClicked += (s, e) => CancelDownload();
             wizardDownloadView.BackClicked += (s, e) => GoToStep(WizardStep.USBSelection);
             wizardFlashView.StartClicked += (s, e) => ExecuteFlashUSB();
-            wizardFlashView.BackClicked += (s, e) => GoToStep(WizardStep.Download);
+            wizardFlashView.BackClicked += (s, e) => 
+            {
+                // If in restore mode, go back to ISO source (manual page)
+                // Otherwise go back to Download
+                if (_isRestoreMode)
+                {
+                    GoToStep(WizardStep.ISOSource);
+                }
+                else
+                {
+                    GoToStep(WizardStep.Download);
+                }
+            };
             wizardCompleteView.FinishClicked += (s, e) => this.Close();
 
             wizardUsbSelectionView.NextButton.Enabled = false;
@@ -148,6 +163,21 @@ namespace BlossomPrepTool
                     break;
                 case WizardStep.Flash:
                     wizardFlashView.Visible = true;
+                    // Control button visibility and text based on restore mode
+                    if (_isRestoreMode)
+                    {
+                        wizardFlashView.StartButton.Visible = false;
+                        wizardFlashView.BackButton.Enabled = false;
+                        wizardFlashView.TitleLabel.Text = "Restore USB Drive";
+                        wizardFlashView.DescriptionLabel.Text = "Restoring your USB drive to normal Windows format. All data will be erased.";
+                    }
+                    else
+                    {
+                        wizardFlashView.StartButton.Visible = true;
+                        wizardFlashView.BackButton.Enabled = true;
+                        wizardFlashView.TitleLabel.Text = "Flash USB Drive";
+                        wizardFlashView.DescriptionLabel.Text = "This will write the ISO to your USB drive. All data will be erased.";
+                    }
                     break;
                 case WizardStep.Complete:
                     wizardCompleteView.Visible = true;
@@ -347,6 +377,83 @@ namespace BlossomPrepTool
             }
         }
 
+        private async void RestoreUSB()
+        {
+            if (wizardUsbSelectionView.DriveComboBox.SelectedIndex < 0)
+            {
+                MessageBox.Show("Please select a USB drive first", "No Drive Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                GoToStep(WizardStep.USBSelection);
+                return;
+            }
+
+            var selectedDrive = _usbDiskMap[wizardUsbSelectionView.DriveComboBox.SelectedIndex];
+
+            var confirmResult = MessageBox.Show(
+                $"This will restore Disk {selectedDrive.DiskNumber} to a normal Windows USB drive.\n\n" +
+                $"All data on the drive will be erased and it will be formatted as FAT32.\n\n" +
+                $"Continue?",
+                "Confirm USB Restore",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmResult != DialogResult.Yes)
+            {
+                return;
+            }
+
+            // Use flash view to show restore progress
+            _isRestoreMode = true;
+            GoToStep(WizardStep.Flash);
+            
+            wizardFlashView.StatusLabel.Text = "⠋ Restoring USB drive...";
+            wizardFlashView.StatusLabel.ForeColor = WarningColor;
+            StartSpinner(wizardFlashView.StatusLabel);
+
+            try
+            {
+                var result = await _preptool.RestoreUSB(selectedDrive.DiskNumber);
+
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    if (result)
+                    {
+                        wizardFlashView.StatusLabel.Text = "✓ USB drive restored successfully!";
+                        wizardFlashView.StatusLabel.ForeColor = SuccessColor;
+                        LogMessage($"USB Disk {selectedDrive.DiskNumber}: Restored to Windows USB");
+                        
+                        // Enable back button and reset mode
+                        wizardFlashView.BackButton.Enabled = true;
+                        _isRestoreMode = false;
+                    }
+                    else
+                    {
+                        wizardFlashView.StatusLabel.Text = "✗ USB restore failed";
+                        wizardFlashView.StatusLabel.ForeColor = ErrorColor;
+                        LogMessage("USB restore failed");
+                        
+                        // Enable back button and reset mode
+                        wizardFlashView.BackButton.Enabled = true;
+                        _isRestoreMode = false;
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    wizardFlashView.StatusLabel.Text = $"✗ Error: {ex.Message}";
+                    wizardFlashView.StatusLabel.ForeColor = ErrorColor;
+                    LogMessage($"USB restore error: {ex.Message}");
+                    
+                    // Enable back button and reset mode
+                    wizardFlashView.BackButton.Enabled = true;
+                    _isRestoreMode = false;
+                }));
+            }
+        }
+
         private async void ExecuteFlashUSB()
         {
             if (wizardUsbSelectionView.DriveComboBox.SelectedIndex < 0)
@@ -390,9 +497,6 @@ namespace BlossomPrepTool
                             wizardFlashView.StatusLabel.ForeColor = SuccessColor;
                             _completedSteps++;
                             LogMessage($"USB Disk {selectedDrive.DiskNumber}: Flash complete");
-
-                            // Auto-advance to complete
-                            Task.Delay(1000).ContinueWith(_ => GoToStep(WizardStep.Complete));
                         }
                         else
                         {
@@ -400,6 +504,13 @@ namespace BlossomPrepTool
                             wizardFlashView.StatusLabel.ForeColor = ErrorColor;
                         }
                     }));
+                    
+                    // Auto-advance to complete after successful flash
+                    if (result)
+                    {
+                        await Task.Delay(1000);
+                        this.Invoke(new Action(() => GoToStep(WizardStep.Complete)));
+                    }
                 }, _cancellationTokenSource.Token);
             }
             catch (OperationCanceledException)

@@ -22,6 +22,7 @@ namespace BlossomPrepTool
     {
         public event EventHandler<USBFlashProgressEventArgs> ProgressUpdate;
         private CancellationTokenSource _cancellationTokenSource;
+        private readonly string _logFilePath;
 
         public async Task<bool> FlashUSB(int diskNumber, string isoPath)
         {
@@ -29,6 +30,7 @@ namespace BlossomPrepTool
 
             try
             {
+                AppendLog($"===== USB Flash started for Disk {diskNumber} =====");
                 ReportProgress("Starting USB flash process...", "info");
 
                 // Validate inputs
@@ -66,6 +68,7 @@ namespace BlossomPrepTool
             }
             catch (Exception ex)
             {
+                AppendLog($"Exception in FlashUSB: {ex}");
                 ReportProgress($"Error: {ex.Message}", "error");
                 return false;
             }
@@ -83,15 +86,18 @@ namespace BlossomPrepTool
                 if (ChocolateyInstaller.IsInstalled())
                 {
                     var chocoPath = ChocolateyInstaller.GetChocoPath();
+                    AppendLog($"Chocolatey found: {chocoPath}");
                     ReportProgress($"Chocolatey detected: {chocoPath}", "success");
                     return true;
                 }
 
+                AppendLog("Chocolatey not found, installing...");
                 ReportProgress("Installing Chocolatey...", "info");
-                return await ChocolateyInstaller.InstallChocolatey(msg => ReportProgress(msg, "info"));
+                return await ChocolateyInstaller.InstallChocolatey(msg => { AppendLog($"Choco install: {msg}"); ReportProgress(msg, "info"); });
             }
             catch (Exception ex)
             {
+                AppendLog($"Exception in EnsureChocoInstalled: {ex}");
                 ReportProgress($"Chocolatey check failed: {ex.Message}", "warning");
                 return false;
             }
@@ -104,23 +110,36 @@ namespace BlossomPrepTool
                 try
                 {
                     if (!ChocolateyInstaller.IsInstalled())
+                    {
+                        AppendLog("Chocolatey not installed, cannot install dd");
                         return false;
+                    }
 
                     // Check if dd is installed
                     if (ChocolateyInstaller.IsPackageInstalled("dd"))
                     {
+                        AppendLog("dd already installed");
                         ReportProgress("dd already installed", "success");
                         return true;
                     }
 
+                    AppendLog("Installing dd package...");
                     ReportProgress("Installing dd...", "info");
-                    bool result = ChocolateyInstaller.InstallPackage("dd", msg => ReportProgress(msg, "info"));
+                    bool result = ChocolateyInstaller.InstallPackage("dd", msg => { AppendLog($"dd install: {msg}"); ReportProgress(msg, "info"); });
                     if (result)
+                    {
+                        AppendLog("dd installed successfully");
                         ReportProgress("dd installed", "success");
+                    }
+                    else
+                    {
+                        AppendLog("dd installation returned false");
+                    }
                     return result;
                 }
                 catch (Exception ex)
                 {
+                    AppendLog($"Exception in EnsureDDInstalled: {ex}");
                     ReportProgress($"dd installation failed: {ex.Message}", "error");
                     return false;
                 }
@@ -230,9 +249,17 @@ namespace BlossomPrepTool
             {
                 var result = RunCommand("where.exe", "dd");
                 if (!string.IsNullOrEmpty(result))
-                    return result.Trim();
+                {
+                    var ddPath = result.Trim();
+                    AppendLog($"dd found at: {ddPath}");
+                    return ddPath;
+                }
+                AppendLog("dd not found in PATH");
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppendLog($"Exception in GetDDPath: {ex}");
+            }
 
             return null;
         }
@@ -255,6 +282,8 @@ namespace BlossomPrepTool
                 var error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
 
+                AppendLog($"Command: {filename} {arguments}\nExitCode: {process.ExitCode}\nStdOut: {output}\nStdErr: {error}");
+
                 if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
                     throw new Exception(error);
 
@@ -264,11 +293,40 @@ namespace BlossomPrepTool
 
         private void ReportProgress(string message, string status)
         {
+            AppendLog($"[{status}] {message}");
             ProgressUpdate?.Invoke(this, new USBFlashProgressEventArgs
             {
                 Message = message,
                 Status = status
             });
+        }
+
+        private void AppendLog(string message)
+        {
+            try
+            {
+                var logDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "BlossomPrepTool");
+
+                if (!Directory.Exists(logDir))
+                    Directory.CreateDirectory(logDir);
+
+                var line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}";
+                File.AppendAllText(_logFilePath, line + Environment.NewLine, Encoding.UTF8);
+            }
+            catch
+            {
+                // Intentionally ignore logging failures
+            }
+        }
+
+        public USBFlashManager()
+        {
+            var logDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "BlossomPrepTool");
+            _logFilePath = Path.Combine(logDir, "usb_flash.log");
         }
     }
 }

@@ -10,7 +10,7 @@ namespace BlossomPrepTool
     {
         // Wizard State
         private enum WizardMode { None, Simple, DualBoot }
-        private enum WizardStep { Welcome, ModeSelection, USBSelection, ISOSource, Download, Flash, Partition, WinBTRFS, Complete }
+        private enum WizardStep { Welcome, ModeSelection, USBSelection, ISOSource, Download, Flash, Partition, Settings, WinBTRFS, Complete }
         private WizardMode _currentMode = WizardMode.None;
         private WizardStep _currentStep = WizardStep.Welcome;
         private bool _isDownloadPaused;
@@ -24,9 +24,10 @@ namespace BlossomPrepTool
             foreach (Control ctrl in this.Controls)
             {
                 if (ctrl == close || ctrl == maximize_normalize || ctrl == minimize ||
-                    ctrl == wizardModeSelectionView || ctrl == wizardUsbSelectionView ||
-                    ctrl == wizardIsoSourceView || ctrl == wizardDownloadView ||
-                    ctrl == wizardFlashView || ctrl == wizardCompleteView)
+                    ctrl == wizardWelcomeView || ctrl == wizardModeSelectionView || ctrl == wizardUsbSelectionView ||
+                    ctrl == wizardIsoSourceView || ctrl == wizardDownloadView || 
+                    ctrl == wizardFlashView || ctrl == wizardPartitionView || 
+                    ctrl == wizardSettingsView || ctrl == wizardWinBTRFSView || ctrl == wizardCompleteView)
                 {
                     continue;
                 }
@@ -82,9 +83,9 @@ namespace BlossomPrepTool
                 {
                     GoToStep(WizardStep.ISOSource);
                 }
-                else
+                else // DualBoot mode
                 {
-                    GoToStep(WizardStep.Download);
+                    GoToStep(WizardStep.Partition);
                 }
             };
             wizardUsbSelectionView.BackClicked += (s, e) => GoToStep(WizardStep.Welcome);
@@ -97,20 +98,49 @@ namespace BlossomPrepTool
             wizardIsoSourceView.RestoreClicked += (s, e) => RestoreUSB();
             wizardIsoSourceView.BackClicked += (s, e) => GoToStep(WizardStep.USBSelection);
 
-            wizardDownloadView.NextClicked += (s, e) => GoToStep(WizardStep.Flash);
+            wizardDownloadView.NextClicked += (s, e) => 
+            {
+                if (_currentMode == WizardMode.Simple)
+                {
+                    GoToStep(WizardStep.Flash);
+                }
+                else // DualBoot mode
+                {
+                    GoToStep(WizardStep.Flash);
+                }
+            };
             wizardDownloadView.PauseClicked += (s, e) => ToggleDownloadPause();
             wizardDownloadView.CancelClicked += (s, e) => CancelDownload();
-            wizardDownloadView.BackClicked += (s, e) => GoToStep(WizardStep.USBSelection);
+            wizardDownloadView.BackClicked += (s, e) => GoToStep(_currentMode == WizardMode.Simple ? WizardStep.ISOSource : WizardStep.Partition);
+            
+            wizardPartitionView.NextClicked += (s, e) => ExecuteResizePartition();
+            wizardPartitionView.BackClicked += (s, e) => GoToStep(WizardStep.USBSelection);
+            
             wizardFlashView.StartClicked += (s, e) => ExecuteFlashUSB();
             wizardFlashView.BackClicked += (s, e) =>
             {
                 GoToStep(WizardStep.Welcome);
                 _isRestoreMode = false;
             };
+            
+            wizardSettingsView.NextClicked += (s, e) => ExecuteSystemSettings();
+            wizardSettingsView.BackClicked += (s, e) => GoToStep(WizardStep.Flash);
+            
+            wizardWinBTRFSView.NextClicked += (s, e) => ExecuteInstallWinBTRFS();
+            wizardWinBTRFSView.BackClicked += (s, e) => GoToStep(WizardStep.Partition);
+            
             wizardCompleteView.FinishClicked += (s, e) =>
             {
                 GoToStep(WizardStep.Welcome);
                 _isRestoreMode = false;
+            };
+            wizardCompleteView.RebootClicked += (s, e) =>
+            {
+                if (MessageBox.Show("This will reboot your computer into UEFI firmware settings. Continue?", 
+                    "Confirm Reboot", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    _preptool.RebootToUEFI();
+                }
             };
 
             wizardUsbSelectionView.NextButton.Enabled = false;
@@ -132,11 +162,15 @@ namespace BlossomPrepTool
         private void ShowStep(WizardStep step)
         {
             // Hide all panels
+            wizardWelcomeView.Visible = false;
             wizardModeSelectionView.Visible = false;
             wizardUsbSelectionView.Visible = false;
             wizardIsoSourceView.Visible = false;
             wizardDownloadView.Visible = false;
             wizardFlashView.Visible = false;
+            wizardPartitionView.Visible = false;
+            wizardSettingsView.Visible = false;
+            wizardWinBTRFSView.Visible = false;
             wizardCompleteView.Visible = false;
 
             // Show current step
@@ -153,6 +187,10 @@ namespace BlossomPrepTool
                     break;
                 case WizardStep.ISOSource:
                     wizardIsoSourceView.Visible = true;
+                    break;
+                case WizardStep.Partition:
+                    wizardPartitionView.Visible = true;
+                    LoadPartitionInfo();
                     break;
                 case WizardStep.Download:
                     wizardDownloadView.Visible = true;
@@ -176,8 +214,16 @@ namespace BlossomPrepTool
                         wizardFlashView.DescriptionLabel.Text = "This will write the ISO to your USB drive. All data will be erased.";
                     }
                     break;
+                case WizardStep.Settings:
+                    wizardSettingsView.Visible = true;
+                    break;
+                case WizardStep.WinBTRFS:
+                    wizardWinBTRFSView.Visible = true;
+                    break;
                 case WizardStep.Complete:
                     wizardCompleteView.Visible = true;
+                    // Hide reboot button in Simple mode
+                    wizardCompleteView.RebootButton.Visible = (_currentMode == WizardMode.DualBoot);
                     break;
             }
         }
@@ -518,11 +564,21 @@ namespace BlossomPrepTool
                         }
                     }));
 
-                    // Auto-advance to complete after successful flash
+                    // Auto-advance to next step after successful flash
                     if (result)
                     {
                         await Task.Delay(1000);
-                        this.Invoke(new Action(() => GoToStep(WizardStep.Complete)));
+                        this.Invoke(new Action(() =>
+                        {
+                            if (_currentMode == WizardMode.DualBoot)
+                            {
+                                GoToStep(WizardStep.Settings);
+                            }
+                            else
+                            {
+                                GoToStep(WizardStep.Complete);
+                            }
+                        }));
                     }
                 }, _cancellationTokenSource.Token);
             }
@@ -551,6 +607,181 @@ namespace BlossomPrepTool
                     wizardFlashView.StatusLabel.Text = $"✗ Error: {ex.Message}";
                     wizardFlashView.StatusLabel.ForeColor = ErrorColor;
                     LogMessage($"Flash failed: {ex.Message}");
+                }));
+            }
+        }
+
+        private async void LoadPartitionInfo()
+        {
+            try
+            {
+                var sizeInfo = await _preptool.GetCDriveSizeInfo();
+                wizardPartitionView.DiskInfoLabel.Text = 
+                    $"C: Drive: {sizeInfo.TotalSizeGB:F1} GB total, {sizeInfo.UsedSpaceGB:F1} GB used, {sizeInfo.FreeSpaceGB:F1} GB free";
+                wizardPartitionView.DiskInfoLabel.ForeColor = SuccessColor;
+                
+                // Set default allocation to 50GB or 20% of free space, whichever is larger
+                var recommendedGB = Math.Max(50, (int)(sizeInfo.FreeSpaceGB * 0.2));
+                wizardPartitionView.AllocateTextBox.Text = recommendedGB.ToString();
+            }
+            catch (Exception ex)
+            {
+                wizardPartitionView.DiskInfoLabel.Text = $"Error loading disk info: {ex.Message}";
+                wizardPartitionView.DiskInfoLabel.ForeColor = ErrorColor;
+            }
+        }
+
+        private async void ExecuteResizePartition()
+        {
+            if (!double.TryParse(wizardPartitionView.AllocateTextBox.Text, out double allocateGB) || allocateGB < 20)
+            {
+                MessageBox.Show("Please enter a valid size (minimum 20 GB recommended)", "Invalid Size", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            wizardPartitionView.StatusLabel.Text = "⠋ Resizing partition...";
+            wizardPartitionView.StatusLabel.ForeColor = WarningColor;
+            wizardPartitionView.NextButton.Enabled = false;
+            wizardPartitionView.BackButton.Enabled = false;
+            StartSpinner(wizardPartitionView.StatusLabel);
+
+            try
+            {
+                var result = await _preptool.ResizePartition(allocateGB);
+                
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    if (result)
+                    {
+                        wizardPartitionView.StatusLabel.Text = "✓ Partition resized successfully!";
+                        wizardPartitionView.StatusLabel.ForeColor = SuccessColor;
+                        LogMessage($"Partition resized: {allocateGB}GB allocated for BlossomOS");
+                        
+                        Task.Delay(1000).ContinueWith(_ =>
+                        {
+                            this.Invoke(new Action(() => GoToStep(WizardStep.Download)));
+                        });
+                    }
+                    else
+                    {
+                        wizardPartitionView.StatusLabel.Text = "✗ Partition resize failed";
+                        wizardPartitionView.StatusLabel.ForeColor = ErrorColor;
+                        wizardPartitionView.NextButton.Enabled = true;
+                        wizardPartitionView.BackButton.Enabled = true;
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    wizardPartitionView.StatusLabel.Text = $"✗ Error: {ex.Message}";
+                    wizardPartitionView.StatusLabel.ForeColor = ErrorColor;
+                    wizardPartitionView.NextButton.Enabled = true;
+                    wizardPartitionView.BackButton.Enabled = true;
+                    LogMessage($"Partition resize error: {ex.Message}");
+                }));
+            }
+        }
+
+        private async void ExecuteSystemSettings()
+        {
+            wizardSettingsView.StatusLabel.Text = "⠋ Applying system settings...";
+            wizardSettingsView.StatusLabel.ForeColor = WarningColor;
+            wizardSettingsView.NextButton.Enabled = false;
+            wizardSettingsView.BackButton.Enabled = false;
+            StartSpinner(wizardSettingsView.StatusLabel);
+
+            try
+            {
+                var utcResult = await _preptool.SetTimeToUTC();
+                var fastStartupResult = await _preptool.DisableFastStartup();
+
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    if (utcResult && fastStartupResult)
+                    {
+                        wizardSettingsView.StatusLabel.Text = "✓ System settings configured successfully!";
+                        wizardSettingsView.StatusLabel.ForeColor = SuccessColor;
+                        LogMessage("System settings: UTC time enabled, Fast Startup disabled");
+                        
+                        Task.Delay(1000).ContinueWith(_ =>
+                        {
+                            this.Invoke(new Action(() => GoToStep(WizardStep.WinBTRFS)));
+                        });
+                    }
+                    else
+                    {
+                        wizardSettingsView.StatusLabel.Text = "⚠ Some settings could not be applied";
+                        wizardSettingsView.StatusLabel.ForeColor = WarningColor;
+                        wizardSettingsView.NextButton.Enabled = true;
+                        wizardSettingsView.BackButton.Enabled = true;
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    wizardSettingsView.StatusLabel.Text = $"✗ Error: {ex.Message}";
+                    wizardSettingsView.StatusLabel.ForeColor = ErrorColor;
+                    wizardSettingsView.NextButton.Enabled = true;
+                    wizardSettingsView.BackButton.Enabled = true;
+                    LogMessage($"System settings error: {ex.Message}");
+                }));
+            }
+        }
+
+        private async void ExecuteInstallWinBTRFS()
+        {
+            wizardWinBTRFSView.StatusLabel.Text = "⠋ Installing WinBtrfs...";
+            wizardWinBTRFSView.StatusLabel.ForeColor = WarningColor;
+            wizardWinBTRFSView.NextButton.Enabled = false;
+            wizardWinBTRFSView.BackButton.Enabled = false;
+            StartSpinner(wizardWinBTRFSView.StatusLabel);
+
+            try
+            {
+                var result = await _preptool.InstallWinBTRFS();
+
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    if (result)
+                    {
+                        wizardWinBTRFSView.StatusLabel.Text = "✓ WinBtrfs installed successfully!";
+                        wizardWinBTRFSView.StatusLabel.ForeColor = SuccessColor;
+                        LogMessage("WinBtrfs installation completed");
+                        
+                        Task.Delay(1000).ContinueWith(_ =>
+                        {
+                            this.Invoke(new Action(() => GoToStep(WizardStep.Complete)));
+                        });
+                    }
+                    else
+                    {
+                        wizardWinBTRFSView.StatusLabel.Text = "✗ WinBtrfs installation failed";
+                        wizardWinBTRFSView.StatusLabel.ForeColor = ErrorColor;
+                        wizardWinBTRFSView.NextButton.Enabled = true;
+                        wizardWinBTRFSView.BackButton.Enabled = true;
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    wizardWinBTRFSView.StatusLabel.Text = $"✗ Error: {ex.Message}";
+                    wizardWinBTRFSView.StatusLabel.ForeColor = ErrorColor;
+                    wizardWinBTRFSView.NextButton.Enabled = true;
+                    wizardWinBTRFSView.BackButton.Enabled = true;
+                    LogMessage($"WinBtrfs installation error: {ex.Message}");
                 }));
             }
         }

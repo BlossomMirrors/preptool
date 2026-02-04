@@ -150,6 +150,24 @@
     <Compile Include="WizardFlashView.Designer.cs">
       <DependentUpon>WizardFlashView.cs</DependentUpon>
     </Compile>
+    <Compile Include="WizardPartitionView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WizardPartitionView.Designer.cs">
+      <DependentUpon>WizardPartitionView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WizardSettingsView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WizardSettingsView.Designer.cs">
+      <DependentUpon>WizardSettingsView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WizardWinBTRFSView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WizardWinBTRFSView.Designer.cs">
+      <DependentUpon>WizardWinBTRFSView.cs</DependentUpon>
+    </Compile>
     <Compile Include="WizardCompleteView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -162,6 +180,7 @@
       <DependentUpon>WindowControls.resx</DependentUpon>
     </Compile>
     <Compile Include="ChocolateyInstaller.cs" />
+    <Compile Include="SystemSettingsManager.cs" />
     <Compile Include="USBUtilities.cs" />
     <Compile Include="ISOManager.cs" />
     <Compile Include="USBFlashManager.cs" />
@@ -193,6 +212,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WizardFlashView.resx">
       <DependentUpon>WizardFlashView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WizardPartitionView.resx">
+      <DependentUpon>WizardPartitionView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WizardSettingsView.resx">
+      <DependentUpon>WizardSettingsView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WizardWinBTRFSView.resx">
+      <DependentUpon>WizardWinBTRFSView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WizardCompleteView.resx">
       <DependentUpon>WizardCompleteView.cs</DependentUpon>

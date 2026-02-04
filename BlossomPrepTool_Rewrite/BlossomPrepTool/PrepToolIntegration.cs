@@ -16,6 +16,7 @@ namespace BlossomPrepTool
         private USBRestoreManager _usbRestoreManager;
         private PartitionManager _partitionManager;
         private WinBTRFSManager _winbtrfsManager;
+        private SystemSettingsManager _systemSettingsManager;
 
         public event EventHandler<EventArgs> StatusChanged;
         public event EventHandler<ISODownloadProgressEventArgs> DownloadProgress;
@@ -27,6 +28,7 @@ namespace BlossomPrepTool
             _usbRestoreManager = new USBRestoreManager();
             _partitionManager = new PartitionManager();
             _winbtrfsManager = new WinBTRFSManager();
+            _systemSettingsManager = new SystemSettingsManager();
 
             // Hook up event handlers
             _usbFlashManager.ProgressUpdate += (s, e) => OnStatusChanged($"[{e.Status}] {e.Message}");
@@ -214,6 +216,59 @@ namespace BlossomPrepTool
                 OnStatusChanged($"USB restore error: {ex.Message}");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Set system hardware clock to UTC (required for Linux dual-boot)
+        /// </summary>
+        public async Task<bool> SetTimeToUTC()
+        {
+            OnStatusChanged("Setting hardware clock to UTC...");
+            try
+            {
+                var result = await _systemSettingsManager.SetTimeToUTC();
+                if (result)
+                    OnStatusChanged("Hardware clock set to UTC");
+                else
+                    OnStatusChanged("Failed to set hardware clock to UTC");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                OnStatusChanged($"UTC time setting error: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Disable Windows Fast Startup (prevents Linux partition access issues)
+        /// </summary>
+        public async Task<bool> DisableFastStartup()
+        {
+            OnStatusChanged("Disabling Fast Startup...");
+            try
+            {
+                var result = await _systemSettingsManager.DisableFastStartup();
+                if (result)
+                    OnStatusChanged("Fast Startup disabled");
+                else
+                    OnStatusChanged("Failed to disable Fast Startup");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                OnStatusChanged($"Fast Startup disable error: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Reboot computer into UEFI firmware settings
+        /// </summary>
+        public bool RebootToUEFI()
+        {
+            OnStatusChanged("Initiating reboot to UEFI...");
+            return _systemSettingsManager.RebootToUEFI();
         }
 
         private void OnStatusChanged(string message)

@@ -38,6 +38,9 @@
             this.wizardIsoSourceView = new BlossomPrepTool.WizardIsoSourceView();
             this.wizardDownloadView = new BlossomPrepTool.WizardDownloadView();
             this.wizardFlashView = new BlossomPrepTool.WizardFlashView();
+            this.wizardPartitionView = new BlossomPrepTool.WizardPartitionView();
+            this.wizardSettingsView = new BlossomPrepTool.WizardSettingsView();
+            this.wizardWinBTRFSView = new BlossomPrepTool.WizardWinBTRFSView();
             this.wizardCompleteView = new BlossomPrepTool.WizardCompleteView();
             this.btnDownloadISO = new System.Windows.Forms.Button();
             this.btnFlashUSB = new System.Windows.Forms.Button();
@@ -149,6 +152,33 @@
             this.wizardFlashView.Size = new System.Drawing.Size(790, 580);
             this.wizardFlashView.TabIndex = 103;
             this.wizardFlashView.Visible = false;
+            // 
+            // wizardPartitionView
+            // 
+            this.wizardPartitionView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardPartitionView.Location = new System.Drawing.Point(10, 30);
+            this.wizardPartitionView.Name = "wizardPartitionView";
+            this.wizardPartitionView.Size = new System.Drawing.Size(790, 580);
+            this.wizardPartitionView.TabIndex = 105;
+            this.wizardPartitionView.Visible = false;
+            // 
+            // wizardSettingsView
+            // 
+            this.wizardSettingsView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardSettingsView.Location = new System.Drawing.Point(10, 30);
+            this.wizardSettingsView.Name = "wizardSettingsView";
+            this.wizardSettingsView.Size = new System.Drawing.Size(790, 580);
+            this.wizardSettingsView.TabIndex = 106;
+            this.wizardSettingsView.Visible = false;
+            // 
+            // wizardWinBTRFSView
+            // 
+            this.wizardWinBTRFSView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wizardWinBTRFSView.Location = new System.Drawing.Point(10, 30);
+            this.wizardWinBTRFSView.Name = "wizardWinBTRFSView";
+            this.wizardWinBTRFSView.Size = new System.Drawing.Size(790, 580);
+            this.wizardWinBTRFSView.TabIndex = 107;
+            this.wizardWinBTRFSView.Visible = false;
             // 
             // wizardCompleteView
             // 
@@ -336,6 +366,9 @@
             this.Controls.Add(this.lblUSBDrives);
             this.Controls.Add(this.lblISOStatus);
             this.Controls.Add(this.wizardCompleteView);
+            this.Controls.Add(this.wizardWinBTRFSView);
+            this.Controls.Add(this.wizardSettingsView);
+            this.Controls.Add(this.wizardPartitionView);
             this.Controls.Add(this.wizardFlashView);
             this.Controls.Add(this.wizardDownloadView);
             this.Controls.Add(this.wizardIsoSourceView);
@@ -377,6 +410,9 @@
         private WizardIsoSourceView wizardIsoSourceView;
         private WizardDownloadView wizardDownloadView;
         private WizardFlashView wizardFlashView;
+        private WizardPartitionView wizardPartitionView;
+        private WizardSettingsView wizardSettingsView;
+        private WizardWinBTRFSView wizardWinBTRFSView;
         private WizardCompleteView wizardCompleteView;
         private System.Windows.Forms.Button btnDownloadISO;
         private System.Windows.Forms.Label lblISOStatus;

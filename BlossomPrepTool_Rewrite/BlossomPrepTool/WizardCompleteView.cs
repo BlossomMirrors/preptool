@@ -8,12 +8,30 @@ namespace BlossomPrepTool
     public partial class WizardCompleteView : UserControl
     {
         public event EventHandler FinishClicked;
+        public event EventHandler RebootClicked;
+
+        public Button RebootButton => btnReboot;
 
         public WizardCompleteView()
         {
             InitializeComponent();
             ApplyRoundedCorners();
             FixLabelTransparency();
+            LoadQRCode();
+        }
+
+        private void LoadQRCode()
+        {
+            try
+            {
+                picQR.Image = DefaultBitmaps.qr;
+            }
+            catch
+            {
+                // QR code not available
+                picQR.Visible = false;
+                lblQRMessage.Visible = false;
+            }
         }
 
         private void ApplyRoundedCorners()
@@ -21,14 +39,17 @@ namespace BlossomPrepTool
             // Round card
             cardMain.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, cardMain.Width, cardMain.Height, 12, 12));
             
-            // Round button
+            // Round buttons
             btnFinish.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnFinish.Width, btnFinish.Height, 8, 8));
+            btnReboot.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnReboot.Width, btnReboot.Height, 8, 8));
         }
 
         private void FixLabelTransparency()
         {
             lblTitle.Parent = cardMain;
             lblMessage.Parent = cardMain;
+            lblInstructions.Parent = cardMain;
+            lblQRMessage.Parent = cardMain;
         }
 
         [System.Runtime.InteropServices.DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
@@ -44,6 +65,11 @@ namespace BlossomPrepTool
         private void btnFinish_Click(object sender, EventArgs e)
         {
             FinishClicked?.Invoke(this, e);
+        }
+
+        private void btnReboot_Click(object sender, EventArgs e)
+        {
+            RebootClicked?.Invoke(this, e);
         }
     }
 }

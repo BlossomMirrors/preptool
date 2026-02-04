@@ -43,18 +43,13 @@ namespace BlossomPrepTool
                 if (!await EnsureChocoInstalled())
                     throw new Exception("Chocolatey installation failed");
 
-                // Ensure dd is installed
-                if (!await EnsureDDInstalled())
-                    throw new Exception("dd installation failed");
+                // Ensure balena-etcher-cli is installed
+                if (!await EnsureBalenaEtcherInstalled())
+                    throw new Exception("balena-etcher-cli installation failed");
 
-                ReportProgress("dd located and ready", "success");
+                ReportProgress("balena-etcher-cli located and ready", "success");
 
-                // Offline disk and clean
-                ReportProgress("Preparing disk (offlining)...", "info");
-                await PrepareUSBDisk(diskNumber);
-                ReportProgress("Disk prepared", "success");
-
-                // Flash ISO
+                // Flash ISO (balena-etcher handles disk preparation and cleaning)
                 ReportProgress("Flashing ISO to USB (this may take a while)...", "info");
                 await ExecuteFlashCommand(diskNumber, isoPath);
 
@@ -111,36 +106,36 @@ namespace BlossomPrepTool
                 {
                     if (!ChocolateyInstaller.IsInstalled())
                     {
-                        AppendLog("Chocolatey not installed, cannot install dd");
+                        AppendLog("Chocolatey not installed, cannot install balena-etcher-cli");
                         return false;
                     }
 
-                    // Check if dd is installed
-                    if (ChocolateyInstaller.IsPackageInstalled("dd"))
+                    // Check if balena-etcher-cli is installed
+                    if (ChocolateyInstaller.IsPackageInstalled("balena-etcher-cli"))
                     {
-                        AppendLog("dd already installed");
-                        ReportProgress("dd already installed", "success");
+                        AppendLog("balena-etcher-cli already installed");
+                        ReportProgress("balena-etcher-cli already installed", "success");
                         return true;
                     }
 
-                    AppendLog("Installing dd package...");
-                    ReportProgress("Installing dd...", "info");
-                    bool result = ChocolateyInstaller.InstallPackage("dd", msg => { AppendLog($"dd install: {msg}"); ReportProgress(msg, "info"); });
+                    AppendLog("Installing balena-etcher-cli package...");
+                    ReportProgress("Installing balena-etcher-cli...", "info");
+                    bool result = ChocolateyInstaller.InstallPackage("balena-etcher-cli", msg => { AppendLog($"etcher install: {msg}"); ReportProgress(msg, "info"); });
                     if (result)
                     {
-                        AppendLog("dd installed successfully");
-                        ReportProgress("dd installed", "success");
+                        AppendLog("balena-etcher-cli installed successfully");
+                        ReportProgress("balena-etcher-cli installed", "success");
                     }
                     else
                     {
-                        AppendLog("dd installation returned false");
+                        AppendLog("balena-etcher-cli installation returned false");
                     }
                     return result;
                 }
                 catch (Exception ex)
                 {
-                    AppendLog($"Exception in EnsureDDInstalled: {ex}");
-                    ReportProgress($"dd installation failed: {ex.Message}", "error");
+                    AppendLog($"Exception in EnsureBalenaEtcherInstalled: {ex}");
+                    ReportProgress($"balena-etcher-cli installation failed: {ex.Message}", "error");
                     return false;
                 }
             });
@@ -176,18 +171,42 @@ namespace BlossomPrepTool
 
         private async Task ExecuteFlashCommand(int diskNumber, string isoPath)
         {
+            try
+            {
+                var result = RunCommand("where.exe", "balena-etcher-cli");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    var etcherPath = result.Trim();
+                    AppendLog($"balena-etcher-cli found at: {etcherPath}");
+                    return etcherPath;
+                }
+                AppendLog("balena-etcher-cli not found in PATH");
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"Exception in GetBalenaEtcherPath: {ex}");
+            }
+
+            return null;
+        }
+
+        private async Task ExecuteFlashCommand(int diskNumber, string isoPath)
+        {
             await Task.Run(() =>
             {
                 try
                 {
-                    var ddPath = GetDDPath();
-                    if (string.IsNullOrEmpty(ddPath))
-                        throw new Exception("dd executable not found");
+                    var etcherPath = GetDDPath();
+                    if (string.IsNullOrEmpty(etcherPath))
+                        throw new Exception("balena-etcher-cli executable not found");
+
+                    // Get the drive path from disk number (e.g., \\.\PhysicalDrive1)
+                    var drivePath = $"\\\\.\\PhysicalDrive{diskNumber}";
 
                     var psi = new ProcessStartInfo
                     {
-                        FileName = ddPath,
-                        Arguments = $"if=\"{isoPath}\" of=\\\\?\\PhysicalDrive{diskNumber} bs=4M",
+                        FileName = etcherPath,
+                        Arguments = $"\"{isoPath}\" --drive \"{drivePath}\" --yes",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
@@ -202,8 +221,11 @@ namespace BlossomPrepTool
                             while ((line = process.StandardOutput.ReadLine()) != null)
                             {
                                 if (_cancellationTokenSource.Token.IsCancellationRequested)
-                                    process.Kill();
+                                {
+                                    try { process.Kill(); } catch { }
+                                }
 
+                                AppendLog($"[etcher stdout] {line}");
                                 ReportProgress(line, "info");
                             }
                         });
@@ -214,8 +236,11 @@ namespace BlossomPrepTool
                             while ((line = process.StandardError.ReadLine()) != null)
                             {
                                 if (_cancellationTokenSource.Token.IsCancellationRequested)
-                                    process.Kill();
+                                {
+                                    try { process.Kill(); } catch { }
+                                }
 
+                                AppendLog($"[etcher stderr] {line}");
                                 ReportProgress(line, "warning");
                             }
                         });
@@ -223,40 +248,32 @@ namespace BlossomPrepTool
                         outputThread.Start();
                         errorThread.Start();
 
-                        process.WaitForExit();
+                        // Wait with cancellation support
+                        while (!process.HasExited)
+                        {
+                            if (_cancellationTokenSource.Token.IsCancellationRequested)
+                            {
+                                try { process.Kill(); } catch { }
+                                AppendLog("Flash process killed by user");
+                                throw new OperationCanceledException();
+                            }
+                            Thread.Sleep(200);
+                        }
+
                         outputThread.Join(5000);
                         errorThread.Join(5000);
 
+                        AppendLog($"balena-etcher-cli exited with code: {process.ExitCode}");
                         if (process.ExitCode != 0)
-                            throw new Exception($"dd exited with code {process.ExitCode}");
+                            throw new Exception($"balena-etcher-cli exited with code {process.ExitCode}");
                     }
                 }
                 catch (Exception ex)
                 {
+                    AppendLog($"Exception in ExecuteFlashCommand: {ex}");
                     throw new Exception($"Flash command failed: {ex.Message}");
                 }
             });
-        }
-
-        private string GetDDPath()
-        {
-            try
-            {
-                var result = RunCommand("where.exe", "dd");
-                if (!string.IsNullOrEmpty(result))
-                {
-                    var ddPath = result.Trim();
-                    AppendLog($"dd found at: {ddPath}");
-                    return ddPath;
-                }
-                AppendLog("dd not found in PATH");
-            }
-            catch (Exception ex)
-            {
-                AppendLog($"Exception in GetDDPath: {ex}");
-            }
-
-            return null;
         }
 
         private string RunCommand(string filename, string arguments)

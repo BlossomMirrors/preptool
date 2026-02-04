@@ -152,25 +152,20 @@ namespace BlossomPrepTool
             {
                 try
                 {
-                    var diskpartScript = new StringBuilder();
-                    diskpartScript.AppendLine($"select disk {diskNumber}");
-                    diskpartScript.AppendLine("clean all");
-                    diskpartScript.AppendLine("offline disk noerr");
-                    diskpartScript.AppendLine("exit");
+                    ReportProgress("Setting disk offline...", "info");
+                    try { Win32DiskHelper.SetOffline(diskNumber); } catch { /* fallback: diskpart if fails */ }
 
+                    ReportProgress("Cleaning disk...", "info");
                     var scriptPath = Path.Combine(Path.GetTempPath(), $"diskpart_{Guid.NewGuid()}.txt");
-                    File.WriteAllText(scriptPath, diskpartScript.ToString(), Encoding.ASCII);
-
+                    File.WriteAllText(scriptPath, $"select disk {diskNumber}\nclean\nexit", Encoding.ASCII);
                     try
                     {
                         RunCommand("diskpart.exe", $"/s \"{scriptPath}\"");
-                        ReportProgress("Disk offline complete, waiting...", "info");
-                        Thread.Sleep(5000); // Wait for system to process
                     }
-                    finally
-                    {
-                        File.Delete(scriptPath);
-                    }
+                    finally { File.Delete(scriptPath); }
+
+                    Thread.Sleep(2000); // small delay to let system stabilize
+
                 }
                 catch (Exception ex)
                 {

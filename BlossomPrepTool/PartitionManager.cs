@@ -44,7 +44,7 @@ namespace BlossomPrepTool
                     // Query WMI to get disk and partition numbers for C: drive
                     int diskNumber = 0;
                     int partitionNumber = 1;
-                    
+
                     try
                     {
                         // Map the logical disk to its partition, then get disk info
@@ -155,36 +155,54 @@ namespace BlossomPrepTool
             {
                 try
                 {
-                    var shrinkMB = (long)(shrinkAmountGB * 1024);
                     var scriptPath = Path.Combine(Path.GetTempPath(), $"diskpart_{Guid.NewGuid()}.txt");
 
-                    // Create diskpart script using detected disk and partition numbers
-                    var diskpartScript = new StringBuilder();
-                    diskpartScript.AppendLine($"select disk {diskNumber}");
-                    diskpartScript.AppendLine($"select partition {partitionNumber}");
-                    diskpartScript.AppendLine($"shrink desired={shrinkMB} minimum=100");
+                    var queryMaxScript = new StringBuilder();
+                    queryMaxScript.AppendLine($"select disk {diskNumber}");
+                    queryMaxScript.AppendLine($"select partition {partitionNumber}");
+                    queryMaxScript.AppendLine("shrink querymax");
 
-                    File.WriteAllText(scriptPath, diskpartScript.ToString(), Encoding.ASCII);
+                    File.WriteAllText(scriptPath, queryMaxScript.ToString(), Encoding.ASCII);
+                    var queryOutput = RunCommand("diskpart.exe", $"/s \"{scriptPath}\"");
+                    File.Delete(scriptPath);
 
-                    try
+                    var match = Regex.Match(queryOutput, @"Maximum possible shrink: (\d+) MB", RegexOptions.IgnoreCase);
+                    if (!match.Success)
                     {
-                        var output = RunCommand("diskpart.exe", $"/s \"{scriptPath}\"");
-                        ReportProgress("Diskpart output: " + output, "info");
-
-                        if (output.IndexOf("error", StringComparison.OrdinalIgnoreCase) >= 0 || 
-                            output.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            ReportProgress("Shrink operation reported an error. Please ensure the partition has enough contiguous free space.", "error");
-                            return false;
-                        }
-
-                        ReportProgress("Partition resize completed successfully", "success");
-                        return true;
+                        ReportProgress("Could not determine maximum shrink size. Aborting.", "error");
+                        return false;
                     }
-                    finally
+
+                    long maxShrinkMB = long.Parse(match.Groups[1].Value);
+                    long desiredShrinkMB = (long)(shrinkAmountGB * 1024);
+
+                    if (desiredShrinkMB > maxShrinkMB)
                     {
-                        try { File.Delete(scriptPath); } catch { }
+                        ReportProgress($"Requested shrink ({desiredShrinkMB} MB) exceeds maximum possible ({maxShrinkMB} MB). Shrinking only max possible.", "warning");
+                        desiredShrinkMB = maxShrinkMB;
                     }
+
+                    scriptPath = Path.Combine(Path.GetTempPath(), $"diskpart_{Guid.NewGuid()}.txt");
+                    var shrinkScript = new StringBuilder();
+                    shrinkScript.AppendLine($"select disk {diskNumber}");
+                    shrinkScript.AppendLine($"select partition {partitionNumber}");
+                    shrinkScript.AppendLine($"shrink desired={desiredShrinkMB} minimum=100");
+
+                    File.WriteAllText(scriptPath, shrinkScript.ToString(), Encoding.ASCII);
+                    var shrinkOutput = RunCommand("diskpart.exe", $"/s \"{scriptPath}\"");
+                    File.Delete(scriptPath);
+
+                    ReportProgress("Diskpart output: " + shrinkOutput, "info");
+
+                    if (shrinkOutput.IndexOf("error", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        shrinkOutput.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        ReportProgress("Shrink operation reported an error. Please ensure the partition has enough contiguous free space.", "error");
+                        return false;
+                    }
+
+                    ReportProgress($"Partition resized successfully by {desiredShrinkMB / 1024.0:F2} GB", "success");
+                    return true;
                 }
                 catch (Exception ex)
                 {

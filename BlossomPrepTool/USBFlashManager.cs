@@ -156,15 +156,33 @@ namespace BlossomPrepTool
                     // Get the drive path from disk number (e.g., \\.\PhysicalDrive1)
                     var drivePath = $"\\\\.\\PhysicalDrive{diskNumber}";
 
-                    var psi = new ProcessStartInfo
+                    var balenaArgs = $"local flash \"{isoPath}\" --drive \"{drivePath}\" --yes";
+                    ProcessStartInfo psi;
+
+                    if (balenaPath.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase))
                     {
-                        FileName = balenaPath,
-                        Arguments = $"local flash \"{isoPath}\" --drive \"{drivePath}\" --yes",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    };
+                        psi = new ProcessStartInfo
+                        {
+                            FileName = "cmd.exe",
+                            Arguments = $"/c \"\"{balenaPath}\" {balenaArgs}\"",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            CreateNoWindow = true
+                        };
+                    }
+                    else
+                    {
+                        psi = new ProcessStartInfo
+                        {
+                            FileName = balenaPath,
+                            Arguments = balenaArgs,
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            CreateNoWindow = true
+                        };
+                    }
 
                     using (var process = Process.Start(psi))
                     {
@@ -236,9 +254,36 @@ namespace BlossomPrepTool
                 var result = RunCommand("where.exe", "balena");
                 if (!string.IsNullOrEmpty(result))
                 {
-                    var etcherPath = result.Trim();
-                    AppendLog($"balena-cli found at: {etcherPath}");
-                    return etcherPath;
+                    var lines = result.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var line in lines)
+                    {
+                        var candidate = line.Trim();
+                        if (candidate.EndsWith("balena.cmd", StringComparison.OrdinalIgnoreCase) && File.Exists(candidate))
+                        {
+                            AppendLog($"balena-cli found at: {candidate}");
+                            return candidate;
+                        }
+                    }
+
+                    foreach (var line in lines)
+                    {
+                        var candidate = line.Trim();
+                        if (candidate.EndsWith("balena.exe", StringComparison.OrdinalIgnoreCase) && File.Exists(candidate))
+                        {
+                            AppendLog($"balena-cli found at: {candidate}");
+                            return candidate;
+                        }
+                    }
+
+                    foreach (var line in lines)
+                    {
+                        var candidate = line.Trim();
+                        if (File.Exists(candidate))
+                        {
+                            AppendLog($"balena-cli found at: {candidate}");
+                            return candidate;
+                        }
+                    }
                 }
                 AppendLog("balena-cli not found in PATH");
             }

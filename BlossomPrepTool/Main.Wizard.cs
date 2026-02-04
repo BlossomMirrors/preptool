@@ -236,9 +236,13 @@ namespace BlossomPrepTool
             wizardDownloadView.StatusLabel.ForeColor = WarningColor;
             wizardDownloadView.ProgressBar.Value = 0;
             wizardDownloadView.NextButton.Enabled = false;
+            wizardDownloadView.NextButton.Visible = false;
             wizardDownloadView.PauseButton.Enabled = false;
+            wizardDownloadView.PauseButton.Visible = false;
             wizardDownloadView.CancelButton.Enabled = true;
+            wizardDownloadView.CancelButton.Visible = false;
             wizardDownloadView.BackButton.Enabled = false;
+            wizardDownloadView.BackButton.Visible = false;
             wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Pause");
             _isDownloadPaused = false;
             StartSpinner(wizardDownloadView.StatusLabel);
@@ -273,14 +277,16 @@ namespace BlossomPrepTool
                             wizardDownloadView.ProgressBar.Value = 100;
                             wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.CacheVerified");
                             wizardDownloadView.StatusLabel.ForeColor = SuccessColor;
-                            wizardDownloadView.NextButton.Enabled = true;
-                            wizardDownloadView.PauseButton.Enabled = false;
-                            wizardDownloadView.CancelButton.Enabled = false;
-                            wizardDownloadView.BackButton.Enabled = true;
-                            wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Pause");
                             _isDownloadPaused = false;
                             _completedSteps++;
                             LogMessage(Localizer.GetString("Status.UsingCached"));
+                        }));
+                        
+                        // Auto-advance to next step after verification completes
+                        await Task.Delay(1000);
+                        this.Invoke(new Action(() =>
+                        {
+                            GoToStep(WizardStep.Flash);
                         }));
                         return;
                     }
@@ -291,7 +297,14 @@ namespace BlossomPrepTool
                         wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.StartingDownload");
                         wizardDownloadView.StatusLabel.ForeColor = WarningColor;
                         wizardDownloadView.ProgressBar.Value = 0;
+                        wizardDownloadView.NextButton.Visible = true;
+                        wizardDownloadView.PauseButton.Visible = true;
+                        wizardDownloadView.CancelButton.Visible = true;
+                        wizardDownloadView.BackButton.Visible = false;
                         wizardDownloadView.PauseButton.Enabled = true;
+                        wizardDownloadView.NextButton.Enabled = false;
+                        wizardDownloadView.CancelButton.Enabled = true;
+                        wizardDownloadView.BackButton.Enabled = false;
                         StartSpinner(wizardDownloadView.StatusLabel);
                     }));
 
@@ -304,9 +317,13 @@ namespace BlossomPrepTool
                         wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.DownloadSuccess");
                         wizardDownloadView.StatusLabel.ForeColor = SuccessColor;
                         wizardDownloadView.NextButton.Enabled = true;
+                        wizardDownloadView.NextButton.Visible = true;
                         wizardDownloadView.PauseButton.Enabled = false;
+                        wizardDownloadView.PauseButton.Visible = true;
                         wizardDownloadView.CancelButton.Enabled = false;
+                        wizardDownloadView.CancelButton.Visible = true;
                         wizardDownloadView.BackButton.Enabled = true;
+                        wizardDownloadView.BackButton.Visible = true;
                         wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Pause");
                         _isDownloadPaused = false;
                         _completedSteps++;
@@ -322,9 +339,13 @@ namespace BlossomPrepTool
                     wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.DownloadCancelled");
                     wizardDownloadView.StatusLabel.ForeColor = TextSecondary;
                     wizardDownloadView.NextButton.Enabled = false;
+                    wizardDownloadView.NextButton.Visible = true;
                     wizardDownloadView.PauseButton.Enabled = false;
+                    wizardDownloadView.PauseButton.Visible = true;
                     wizardDownloadView.CancelButton.Enabled = false;
+                    wizardDownloadView.CancelButton.Visible = true;
                     wizardDownloadView.BackButton.Enabled = true;
+                    wizardDownloadView.BackButton.Visible = true;
                     wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Pause");
                     _isDownloadPaused = false;
                 }));
@@ -337,9 +358,13 @@ namespace BlossomPrepTool
                     wizardDownloadView.StatusLabel.Text = $"✗ Error: {ex.Message}";
                     wizardDownloadView.StatusLabel.ForeColor = ErrorColor;
                     wizardDownloadView.NextButton.Enabled = false;
+                    wizardDownloadView.NextButton.Visible = true;
                     wizardDownloadView.PauseButton.Enabled = false;
+                    wizardDownloadView.PauseButton.Visible = true;
                     wizardDownloadView.CancelButton.Enabled = false;
+                    wizardDownloadView.CancelButton.Visible = true;
                     wizardDownloadView.BackButton.Enabled = true;
+                    wizardDownloadView.BackButton.Visible = true;
                     wizardDownloadView.PauseButton.Text = "Pause";
                     _isDownloadPaused = false;
                     LogMessage($"Download failed: {ex.Message}");

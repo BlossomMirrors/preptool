@@ -11,6 +11,7 @@ namespace BlossomPrepTool
         public WizardModeSelectionView()
         {
             InitializeComponent();
+            lblModeTitle.BackColor = this.BackColor;
         }
 
         private void btnSimpleMode_Click(object sender, EventArgs e)

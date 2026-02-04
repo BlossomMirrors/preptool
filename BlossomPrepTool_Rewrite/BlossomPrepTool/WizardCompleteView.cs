@@ -46,10 +46,17 @@ namespace BlossomPrepTool
 
         private void FixLabelTransparency()
         {
-            lblTitle.Parent = cardMain;
-            lblMessage.Parent = cardMain;
-            lblInstructions.Parent = cardMain;
-            lblQRMessage.Parent = cardMain;
+            SetLabelOnCard(lblTitle);
+            SetLabelOnCard(lblMessage);
+            SetLabelOnCard(lblKeepUSB);
+            SetLabelOnCard(lblInstructions);
+            SetLabelOnCard(lblQRMessage);
+        }
+
+        private void SetLabelOnCard(Label label)
+        {
+            label.Parent = cardMain;
+            label.BackColor = cardMain.BackColor;
         }
 
         [System.Runtime.InteropServices.DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]

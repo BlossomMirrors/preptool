@@ -55,13 +55,25 @@ namespace BlossomPrepTool
 
         private void FixLabelTransparency()
         {
-            lblTitle.Parent = this;
-            lblDownloadTitle.Parent = cardDownload;
-            lblDownloadDesc.Parent = cardDownload;
-            lblUseOwnTitle.Parent = cardUseOwn;
-            lblUseOwnDesc.Parent = cardUseOwn;
-            lblRestoreTitle.Parent = cardRestore;
-            lblRestoreDesc.Parent = cardRestore;
+            SetLabelOnBackground(lblTitle);
+            SetLabelOnCard(lblDownloadTitle, cardDownload);
+            SetLabelOnCard(lblDownloadDesc, cardDownload);
+            SetLabelOnCard(lblUseOwnTitle, cardUseOwn);
+            SetLabelOnCard(lblUseOwnDesc, cardUseOwn);
+            SetLabelOnCard(lblRestoreTitle, cardRestore);
+            SetLabelOnCard(lblRestoreDesc, cardRestore);
+        }
+
+        private void SetLabelOnCard(Label label, Panel card)
+        {
+            label.Parent = card;
+            label.BackColor = card.BackColor;
+        }
+
+        private void SetLabelOnBackground(Label label)
+        {
+            label.Parent = this;
+            label.BackColor = this.BackColor;
         }
 
         private void WireUpEvents()

@@ -204,8 +204,22 @@ namespace BlossomPrepTool
             {
                 if (ctrl is Button btn)
                 {
-                    btn.BackColor = DarkPanel;
-                    btn.ForeColor = TextColor;
+                    if (!string.Equals(btn.Tag as string, "ThemeOverride", StringComparison.Ordinal))
+                    {
+                        bool hasCustomBack = btn.BackColor != SystemColors.Control && btn.BackColor != Color.Empty && btn.BackColor != Color.Transparent;
+                        bool hasCustomFore = btn.ForeColor != SystemColors.ControlText && btn.ForeColor != Color.Empty && btn.ForeColor != Color.Transparent;
+
+                        if (!hasCustomBack)
+                        {
+                            btn.BackColor = DarkPanel;
+                        }
+
+                        if (!hasCustomFore)
+                        {
+                            btn.ForeColor = TextColor;
+                        }
+                    }
+
                     btn.FlatStyle = FlatStyle.Flat;
                     btn.FlatAppearance.BorderSize = 0;
                     btn.FlatAppearance.MouseDownBackColor = AccentColor;
@@ -214,8 +228,24 @@ namespace BlossomPrepTool
                 }
                 else if (ctrl is Label lbl)
                 {
-                    lbl.BackColor = DarkBg;
-                    lbl.ForeColor = TextColor;
+                    if (!string.Equals(lbl.Tag as string, "ThemeOverride", StringComparison.Ordinal))
+                    {
+                        bool hasCustomFore = lbl.ForeColor != SystemColors.ControlText && lbl.ForeColor != Color.Empty && lbl.ForeColor != Color.Transparent;
+
+                        if (lbl.Parent != null)
+                        {
+                            lbl.BackColor = lbl.Parent.BackColor;
+                        }
+                        else
+                        {
+                            lbl.BackColor = DarkBg;
+                        }
+
+                        if (!hasCustomFore)
+                        {
+                            lbl.ForeColor = TextColor;
+                        }
+                    }
                 }
                 else if (ctrl is ListBox lstBox)
                 {

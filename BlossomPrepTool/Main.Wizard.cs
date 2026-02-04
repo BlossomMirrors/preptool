@@ -642,7 +642,7 @@ namespace BlossomPrepTool
                 return;
             }
 
-            wizardPartitionView.StatusLabel.Text = "⠋ Resizing partition...";
+            wizardPartitionView.StatusLabel.Text = Localizer.GetString("Status.ResizingPartition");
             wizardPartitionView.StatusLabel.ForeColor = WarningColor;
             wizardPartitionView.NextButton.Enabled = false;
             wizardPartitionView.BackButton.Enabled = false;
@@ -657,7 +657,7 @@ namespace BlossomPrepTool
                     StopSpinner();
                     if (result)
                     {
-                        wizardPartitionView.StatusLabel.Text = "✓ Partition resized successfully!";
+                        wizardPartitionView.StatusLabel.Text = Localizer.GetString("Status.PartitionResizeSuccess");
                         wizardPartitionView.StatusLabel.ForeColor = SuccessColor;
                         LogMessage($"Partition resized: {allocateGB}GB allocated for BlossomOS");
                         
@@ -668,7 +668,7 @@ namespace BlossomPrepTool
                     }
                     else
                     {
-                        wizardPartitionView.StatusLabel.Text = "✗ Partition resize failed";
+                        wizardPartitionView.StatusLabel.Text = Localizer.GetString("Status.PartitionResizeFailed");
                         wizardPartitionView.StatusLabel.ForeColor = ErrorColor;
                         wizardPartitionView.NextButton.Enabled = true;
                         wizardPartitionView.BackButton.Enabled = true;
@@ -691,7 +691,7 @@ namespace BlossomPrepTool
 
         private async void ExecuteSystemSettings()
         {
-            wizardSettingsView.StatusLabel.Text = "⠋ Applying system settings...";
+            wizardSettingsView.StatusLabel.Text = Localizer.GetString("Status.ApplyingSettings");
             wizardSettingsView.StatusLabel.ForeColor = WarningColor;
             wizardSettingsView.NextButton.Enabled = false;
             wizardSettingsView.BackButton.Enabled = false;
@@ -707,7 +707,7 @@ namespace BlossomPrepTool
                     StopSpinner();
                     if (utcResult && fastStartupResult)
                     {
-                        wizardSettingsView.StatusLabel.Text = "✓ System settings configured successfully!";
+                        wizardSettingsView.StatusLabel.Text = Localizer.GetString("Status.SettingsSuccess");
                         wizardSettingsView.StatusLabel.ForeColor = SuccessColor;
                         LogMessage("System settings: UTC time enabled, Fast Startup disabled");
                         
@@ -718,7 +718,7 @@ namespace BlossomPrepTool
                     }
                     else
                     {
-                        wizardSettingsView.StatusLabel.Text = "⚠ Some settings could not be applied";
+                        wizardSettingsView.StatusLabel.Text = Localizer.GetString("Status.SettingsPartialFail");
                         wizardSettingsView.StatusLabel.ForeColor = WarningColor;
                         wizardSettingsView.NextButton.Enabled = true;
                         wizardSettingsView.BackButton.Enabled = true;
@@ -741,7 +741,7 @@ namespace BlossomPrepTool
 
         private async void ExecuteInstallWinBTRFS()
         {
-            wizardWinBTRFSView.StatusLabel.Text = "⠋ Installing WinBtrfs...";
+            wizardWinBTRFSView.StatusLabel.Text = Localizer.GetString("Status.InstallingWinBTRFS");
             wizardWinBTRFSView.StatusLabel.ForeColor = WarningColor;
             wizardWinBTRFSView.NextButton.Enabled = false;
             wizardWinBTRFSView.BackButton.Enabled = false;
@@ -756,7 +756,7 @@ namespace BlossomPrepTool
                     StopSpinner();
                     if (result)
                     {
-                        wizardWinBTRFSView.StatusLabel.Text = "✓ WinBtrfs installed successfully!";
+                        wizardWinBTRFSView.StatusLabel.Text = Localizer.GetString("Status.WinBTRFSSuccess");
                         wizardWinBTRFSView.StatusLabel.ForeColor = SuccessColor;
                         LogMessage("WinBtrfs installation completed");
                         
@@ -767,7 +767,7 @@ namespace BlossomPrepTool
                     }
                     else
                     {
-                        wizardWinBTRFSView.StatusLabel.Text = "✗ WinBtrfs installation failed";
+                        wizardWinBTRFSView.StatusLabel.Text = Localizer.GetString("Status.WinBTRFSFailed");
                         wizardWinBTRFSView.StatusLabel.ForeColor = ErrorColor;
                         wizardWinBTRFSView.NextButton.Enabled = true;
                         wizardWinBTRFSView.BackButton.Enabled = true;

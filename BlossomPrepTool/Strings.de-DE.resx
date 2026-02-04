@@ -455,4 +455,37 @@ für Video-Tutorial</value>
   <data name="WizardUSBSelection.NoUSB" xml:space="preserve">
     <value>Kein USB ausgewählt</value>
   </data>
+  
+  <!-- Partitionsgrößen-Änderung Statusmeldungen -->
+  <data name="Status.ResizingPartition" xml:space="preserve">
+    <value>⠋ Ändere Partitionsgröße...</value>
+  </data>
+  <data name="Status.PartitionResizeSuccess" xml:space="preserve">
+    <value>✓ Partitionsgröße erfolgreich geändert!</value>
+  </data>
+  <data name="Status.PartitionResizeFailed" xml:space="preserve">
+    <value>✗ Partitionsgrößen-Änderung fehlgeschlagen</value>
+  </data>
+  
+  <!-- Systemeinstellungen Statusmeldungen -->
+  <data name="Status.ApplyingSettings" xml:space="preserve">
+    <value>⠋ Wende Systemeinstellungen an...</value>
+  </data>
+  <data name="Status.SettingsSuccess" xml:space="preserve">
+    <value>✓ Systemeinstellungen erfolgreich konfiguriert!</value>
+  </data>
+  <data name="Status.SettingsPartialFail" xml:space="preserve">
+    <value>⚠ Einige Einstellungen konnten nicht angewendet werden</value>
+  </data>
+  
+  <!-- WinBTRFS Statusmeldungen -->
+  <data name="Status.InstallingWinBTRFS" xml:space="preserve">
+    <value>⠋ Installiere WinBtrfs...</value>
+  </data>
+  <data name="Status.WinBTRFSSuccess" xml:space="preserve">
+    <value>✓ WinBtrfs erfolgreich installiert!</value>
+  </data>
+  <data name="Status.WinBTRFSFailed" xml:space="preserve">
+    <value>✗ WinBtrfs-Installation fehlgeschlagen</value>
+  </data>
 </root>

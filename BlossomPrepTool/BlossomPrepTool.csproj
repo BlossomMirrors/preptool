@@ -116,7 +116,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="MainHelpers.cs" />
-    <Compile Include="Win32DiskHelper.cs" />
     <Compile Include="WizardDesignSystem.cs" />
     <Compile Include="Localizer.cs" />
     <Compile Include="Locale_en_US.cs" />

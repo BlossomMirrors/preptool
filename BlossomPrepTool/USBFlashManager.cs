@@ -98,7 +98,7 @@ namespace BlossomPrepTool
             }
         }
 
-        private async Task<bool> EnsureDDInstalled()
+        private async Task<bool> EnsureBalenaEtcherInstalled()
         {
             return await Task.Run(() =>
             {
@@ -141,54 +141,7 @@ namespace BlossomPrepTool
             });
         }
 
-        private async Task PrepareUSBDisk(int diskNumber)
-        {
-            await Task.Run(() =>
-            {
-                try
-                {
-                    ReportProgress("Setting disk offline...", "info");
-                    try { Win32DiskHelper.SetOffline(diskNumber); } catch { /* fallback: diskpart if fails */ }
 
-                    ReportProgress("Cleaning disk...", "info");
-                    var scriptPath = Path.Combine(Path.GetTempPath(), $"diskpart_{Guid.NewGuid()}.txt");
-                    File.WriteAllText(scriptPath, $"select disk {diskNumber}\nclean\nexit", Encoding.ASCII);
-                    try
-                    {
-                        RunCommand("diskpart.exe", $"/s \"{scriptPath}\"");
-                    }
-                    finally { File.Delete(scriptPath); }
-
-                    Thread.Sleep(2000); // small delay to let system stabilize
-
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Disk preparation failed: {ex.Message}");
-                }
-            });
-        }
-
-        private async Task ExecuteFlashCommand(int diskNumber, string isoPath)
-        {
-            try
-            {
-                var result = RunCommand("where.exe", "balena-etcher-cli");
-                if (!string.IsNullOrEmpty(result))
-                {
-                    var etcherPath = result.Trim();
-                    AppendLog($"balena-etcher-cli found at: {etcherPath}");
-                    return etcherPath;
-                }
-                AppendLog("balena-etcher-cli not found in PATH");
-            }
-            catch (Exception ex)
-            {
-                AppendLog($"Exception in GetBalenaEtcherPath: {ex}");
-            }
-
-            return null;
-        }
 
         private async Task ExecuteFlashCommand(int diskNumber, string isoPath)
         {
@@ -196,7 +149,7 @@ namespace BlossomPrepTool
             {
                 try
                 {
-                    var etcherPath = GetDDPath();
+                    var etcherPath = GetBalenaEtcherPath();
                     if (string.IsNullOrEmpty(etcherPath))
                         throw new Exception("balena-etcher-cli executable not found");
 
@@ -274,6 +227,27 @@ namespace BlossomPrepTool
                     throw new Exception($"Flash command failed: {ex.Message}");
                 }
             });
+        }
+
+        private string GetBalenaEtcherPath()
+        {
+            try
+            {
+                var result = RunCommand("where.exe", "balena-etcher-cli");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    var etcherPath = result.Trim();
+                    AppendLog($"balena-etcher-cli found at: {etcherPath}");
+                    return etcherPath;
+                }
+                AppendLog("balena-etcher-cli not found in PATH");
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"Exception in GetBalenaEtcherPath: {ex}");
+            }
+
+            return null;
         }
 
         private string RunCommand(string filename, string arguments)

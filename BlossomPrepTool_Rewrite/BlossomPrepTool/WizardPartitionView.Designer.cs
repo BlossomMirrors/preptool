@@ -60,6 +60,7 @@ namespace BlossomPrepTool
             // 
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Georgia", 20F, System.Drawing.FontStyle.Bold);
+            this.lblTitle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(231)))));
             this.lblTitle.Location = new System.Drawing.Point(30, 30);
             this.lblTitle.Name = "lblTitle";
@@ -71,6 +72,7 @@ namespace BlossomPrepTool
             // 
             this.lblDescription.AutoSize = true;
             this.lblDescription.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.lblDescription.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
             this.lblDescription.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(231)))));
             this.lblDescription.Location = new System.Drawing.Point(30, 80);
             this.lblDescription.MaximumSize = new System.Drawing.Size(660, 0);
@@ -83,6 +85,7 @@ namespace BlossomPrepTool
             // 
             this.lblDiskInfo.AutoSize = true;
             this.lblDiskInfo.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblDiskInfo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
             this.lblDiskInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(161)))), ((int)(((byte)(161)))), ((int)(((byte)(170)))));
             this.lblDiskInfo.Location = new System.Drawing.Point(30, 120);
             this.lblDiskInfo.MaximumSize = new System.Drawing.Size(660, 0);
@@ -95,6 +98,7 @@ namespace BlossomPrepTool
             // 
             this.lblAllocateLabel.AutoSize = true;
             this.lblAllocateLabel.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            this.lblAllocateLabel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
             this.lblAllocateLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(231)))));
             this.lblAllocateLabel.Location = new System.Drawing.Point(30, 170);
             this.lblAllocateLabel.Name = "lblAllocateLabel";
@@ -119,6 +123,7 @@ namespace BlossomPrepTool
             // 
             this.lblGBLabel.AutoSize = true;
             this.lblGBLabel.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.lblGBLabel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
             this.lblGBLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(161)))), ((int)(((byte)(161)))), ((int)(((byte)(170)))));
             this.lblGBLabel.Location = new System.Drawing.Point(330, 172);
             this.lblGBLabel.Name = "lblGBLabel";
@@ -130,6 +135,7 @@ namespace BlossomPrepTool
             // 
             this.lblStatus.AutoSize = true;
             this.lblStatus.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
             this.lblStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(161)))), ((int)(((byte)(161)))), ((int)(((byte)(170)))));
             this.lblStatus.Location = new System.Drawing.Point(30, 230);
             this.lblStatus.MaximumSize = new System.Drawing.Size(660, 0);

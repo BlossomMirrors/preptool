@@ -37,6 +37,7 @@ namespace BlossomPrepTool
             // 
             this.lblModeTitle.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblModeTitle.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblModeTitle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(23)))));
             this.lblModeTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(231)))));
             this.lblModeTitle.Location = new System.Drawing.Point(0, 0);
             this.lblModeTitle.Name = "lblModeTitle";

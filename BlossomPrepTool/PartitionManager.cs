@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Management;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -20,6 +21,8 @@ namespace BlossomPrepTool
     public class PartitionManager
     {
         public event EventHandler<PartitionProgressEventArgs> ProgressUpdate;
+
+        private readonly string _logFilePath;
 
         public class DriveSizeInfo
         {
@@ -105,6 +108,12 @@ namespace BlossomPrepTool
         {
             try
             {
+                if (!IsAdministrator())
+                {
+                    ReportProgress("Partition resize requires administrator privileges. Please run the app as administrator.", "error");
+                    return false;
+                }
+
                 ReportProgress("Starting partition resize...", "info");
 
                 var driveInfo = await GetCDriveSizeInfo();
@@ -140,10 +149,25 @@ namespace BlossomPrepTool
                 }
 
                 // Execute shrink with detected disk and partition numbers
-                return await ExecuteShrink(shrinkAmountGB, driveInfo.DiskNumber, driveInfo.PartitionNumber);
+                var diskpartResult = await ExecuteShrink(shrinkAmountGB, driveInfo.DiskNumber, driveInfo.PartitionNumber);
+                if (diskpartResult)
+                    return true;
+
+                // Fallback to PowerShell Resize-Partition (same underlying VDS stack as Disk Management)
+                ReportProgress("Diskpart shrink failed. Attempting PowerShell Resize-Partition...", "warning");
+                var currentBytes = new DriveInfo("C").TotalSize;
+                var targetBytes = currentBytes - (long)(shrinkAmountGB * 1024 * 1024 * 1024);
+                if (targetBytes <= 0)
+                {
+                    ReportProgress("Invalid target size computed for PowerShell resize. Aborting.", "error");
+                    return false;
+                }
+
+                return await TryResizeWithPowerShell(targetBytes);
             }
             catch (Exception ex)
             {
+                AppendLog("Exception in ResizePartition: " + ex);
                 ReportProgress($"Partition resize failed: {ex.Message}", "error");
                 return false;
             }
@@ -158,12 +182,13 @@ namespace BlossomPrepTool
                     var scriptPath = Path.Combine(Path.GetTempPath(), $"diskpart_{Guid.NewGuid()}.txt");
 
                     var queryMaxScript = new StringBuilder();
-                    queryMaxScript.AppendLine($"select disk {diskNumber}");
-                    queryMaxScript.AppendLine($"select partition {partitionNumber}");
+                    queryMaxScript.AppendLine("select volume C");
                     queryMaxScript.AppendLine("shrink querymax");
+                    queryMaxScript.AppendLine("exit");
 
                     File.WriteAllText(scriptPath, queryMaxScript.ToString(), Encoding.ASCII);
                     var queryOutput = RunCommand("diskpart.exe", $"/s \"{scriptPath}\"");
+                    AppendLog("Diskpart querymax output: " + queryOutput);
                     File.Delete(scriptPath);
 
                     var match = Regex.Match(queryOutput, @"Maximum possible shrink: (\d+) MB", RegexOptions.IgnoreCase);
@@ -184,20 +209,30 @@ namespace BlossomPrepTool
 
                     scriptPath = Path.Combine(Path.GetTempPath(), $"diskpart_{Guid.NewGuid()}.txt");
                     var shrinkScript = new StringBuilder();
-                    shrinkScript.AppendLine($"select disk {diskNumber}");
-                    shrinkScript.AppendLine($"select partition {partitionNumber}");
-                    shrinkScript.AppendLine($"shrink desired={desiredShrinkMB} minimum=100");
+                    shrinkScript.AppendLine("select volume C");
+                    shrinkScript.AppendLine($"shrink desired={desiredShrinkMB} minimum={desiredShrinkMB}");
+                    shrinkScript.AppendLine("exit");
 
                     File.WriteAllText(scriptPath, shrinkScript.ToString(), Encoding.ASCII);
                     var shrinkOutput = RunCommand("diskpart.exe", $"/s \"{scriptPath}\"");
                     File.Delete(scriptPath);
 
                     ReportProgress("Diskpart output: " + shrinkOutput, "info");
+                    AppendLog("Diskpart shrink output: " + shrinkOutput);
 
                     if (shrinkOutput.IndexOf("error", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                        shrinkOutput.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0)
+                        shrinkOutput.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        shrinkOutput.IndexOf("not supported", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        shrinkOutput.IndexOf("no volume selected", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         ReportProgress("Shrink operation reported an error. Please ensure the partition has enough contiguous free space.", "error");
+                        return false;
+                    }
+
+                    if (shrinkOutput.IndexOf("successfully shrunk", StringComparison.OrdinalIgnoreCase) < 0 &&
+                        shrinkOutput.IndexOf("shrink", StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        ReportProgress("Shrink operation did not report success. Please check diskpart output for details.", "warning");
                         return false;
                     }
 
@@ -206,10 +241,27 @@ namespace BlossomPrepTool
                 }
                 catch (Exception ex)
                 {
+                    AppendLog("Exception in ExecuteShrink: " + ex);
                     ReportProgress($"Shrink execution failed: {ex.Message}", "error");
                     return false;
                 }
             });
+        }
+
+        private bool IsAdministrator()
+        {
+            try
+            {
+                using (var identity = WindowsIdentity.GetCurrent())
+                {
+                    var principal = new WindowsPrincipal(identity);
+                    return principal.IsInRole(WindowsBuiltInRole.Administrator);
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private async Task DisableHibernation()
@@ -238,6 +290,7 @@ namespace BlossomPrepTool
                 }
                 catch (Exception ex)
                 {
+                    AppendLog("Exception in DisableHibernation: " + ex);
                     ReportProgress($"Error disabling hibernation: {ex.Message}", "warning");
                 }
             });
@@ -271,7 +324,49 @@ namespace BlossomPrepTool
                 }
                 catch (Exception ex)
                 {
+                    AppendLog("Exception in RunDefragmentation: " + ex);
                     ReportProgress($"Error during defragmentation: {ex.Message}", "warning");
+                }
+            });
+        }
+
+        private async Task<bool> TryResizeWithPowerShell(long targetSizeBytes)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    var command =
+                        $"Resize-Partition -DriveLetter C -Size {targetSizeBytes} -ErrorAction Stop;" +
+                        "Write-Output 'Resize-Partition completed'";
+
+                    var output = RunCommand("powershell.exe",
+                        $"-NoProfile -ExecutionPolicy Bypass -Command \"{command}\"");
+
+                    ReportProgress("PowerShell output: " + output, "info");
+                    AppendLog("PowerShell output: " + output);
+
+                    if (output.IndexOf("error", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        output.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        ReportProgress("PowerShell resize reported an error. Please check output for details.", "error");
+                        return false;
+                    }
+
+                    if (output.IndexOf("completed", StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        ReportProgress("PowerShell resize did not report success. Please check output for details.", "warning");
+                        return false;
+                    }
+
+                    ReportProgress("Partition resize completed successfully via PowerShell", "success");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    AppendLog("Exception in TryResizeWithPowerShell: " + ex);
+                    ReportProgress($"PowerShell resize failed: {ex.Message}", "error");
+                    return false;
                 }
             });
         }
@@ -294,17 +389,49 @@ namespace BlossomPrepTool
                 var error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
 
+                AppendLog($"Command: {filename} {arguments}\nExitCode: {process.ExitCode}\nStdOut: {output}\nStdErr: {error}");
                 return !string.IsNullOrEmpty(error) ? error : output;
             }
         }
 
         private void ReportProgress(string message, string status)
         {
+            AppendLog($"[{status}] {message}");
             ProgressUpdate?.Invoke(this, new PartitionProgressEventArgs
             {
                 Message = message,
                 Status = status
             });
+        }
+
+        private void AppendLog(string message)
+        {
+            try
+            {
+                var logDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "BlossomPrepTool");
+
+                if (!Directory.Exists(logDir))
+                {
+                    Directory.CreateDirectory(logDir);
+                }
+
+                var line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}";
+                File.AppendAllText(_logFilePath, line + Environment.NewLine, Encoding.UTF8);
+            }
+            catch
+            {
+                // Intentionally ignore logging failures
+            }
+        }
+
+        public PartitionManager()
+        {
+            var logDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "BlossomPrepTool");
+            _logFilePath = Path.Combine(logDir, "partition.log");
         }
     }
 }

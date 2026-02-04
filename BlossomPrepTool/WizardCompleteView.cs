@@ -30,6 +30,10 @@ namespace BlossomPrepTool
 
         private void ApplyLocalization()
         {
+            lblTitle.Text = Localizer.GetString("WizardComplete.Title");
+            lblMessage.Text = Localizer.GetString("WizardComplete.Message");
+            lblQRMessage.Text = Localizer.GetString("WizardComplete.QRMessage");
+            lblKeepUSB.Text = Localizer.GetString("WizardComplete.KeepUSB");
             btnFinish.Text = Localizer.GetString("Button.Finish");
             btnReboot.Text = Localizer.GetString("Button.RebootToUEFI");
         }

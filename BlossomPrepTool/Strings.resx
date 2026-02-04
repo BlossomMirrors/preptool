@@ -160,9 +160,6 @@ a normal Windows USB drive</value>
   <data name="WizardPartition.Description" xml:space="preserve">
     <value>Choose how much space to allocate for BlossomOS from your C: drive.</value>
   </data>
-  <data name="WizardPartition.DiskInfo" xml:space="preserve">
-    <value>Loading disk information...</value>
-  </data>
   <data name="WizardPartition.AllocateLabel" xml:space="preserve">
     <value>Space for BlossomOS:</value>
   </data>
@@ -319,5 +316,139 @@ Continue?</value>
   </data>
   <data name="Button.ApplySettings" xml:space="preserve">
     <value>Apply Settings</value>
+  </data>
+  
+  <!-- Status Messages -->
+  <data name="Status.Processing" xml:space="preserve">
+    <value>Processing...</value>
+  </data>
+  <data name="Status.CheckingCache" xml:space="preserve">
+    <value>⠋ Checking for cached image...</value>
+  </data>
+  <data name="Status.CacheVerified" xml:space="preserve">
+    <value>✓ Cached image verified successfully!</value>
+  </data>
+  <data name="Status.UsingCached" xml:space="preserve">
+    <value>Using cached image</value>
+  </data>
+  
+  <!-- Complete View / Finish Strings -->
+  <data name="WizardComplete.QRMessage" xml:space="preserve">
+    <value>Scan with your mobile device
+for video tutorial</value>
+  </data>
+  <data name="WizardComplete.KeepUSB" xml:space="preserve">
+    <value>💡 Important: Keep your USB drive safe - it can be used to reinstall or recover BlossomOS.</value>
+  </data>
+  <data name="WizardComplete.Message" xml:space="preserve">
+    <value>Your USB drive is ready to boot from!</value>
+  </data>
+  
+  <!-- Download Status Messages -->
+  <data name="Status.StartingDownload" xml:space="preserve">
+    <value>⠋ Starting download...</value>
+  </data>
+  <data name="Status.DownloadSuccess" xml:space="preserve">
+    <value>✓ Image downloaded successfully!</value>
+  </data>
+  <data name="Status.DownloadCancelled" xml:space="preserve">
+    <value>⊘ Download cancelled</value>
+  </data>
+  <data name="Status.ResumeDownload" xml:space="preserve">
+    <value>⠋ Resuming download...</value>
+  </data>
+  <data name="Status.DownloadPaused" xml:space="preserve">
+    <value>⏸ Download paused</value>
+  </data>
+  
+  <!-- Flash/Restore Status Messages -->
+  <data name="Status.RestoringUSB" xml:space="preserve">
+    <value>⠋ Restoring USB drive...</value>
+  </data>
+  <data name="Status.RestoreSuccess" xml:space="preserve">
+    <value>✓ USB drive restored successfully!</value>
+  </data>
+  <data name="Status.RestoreFailed" xml:space="preserve">
+    <value>✗ USB restore failed</value>
+  </data>
+  <data name="Status.FlashingUSB" xml:space="preserve">
+    <value>⠋ Flashing USB...</value>
+  </data>
+  <data name="Status.FlashSuccess" xml:space="preserve">
+    <value>✓ USB flashed successfully!</value>
+  </data>
+  <data name="Status.FlashFailed" xml:space="preserve">
+    <value>✗ Flash operation failed</value>
+  </data>
+  <data name="Status.FlashCancelled" xml:space="preserve">
+    <value>⊘ Flash cancelled</value>
+  </data>
+  
+  <!-- Restore Operation Strings -->
+  <data name="Message.RestoreUSB" xml:space="preserve">
+    <value>Restoring your USB drive to normal Windows format. All data will be erased.</value>
+  </data>
+  <data name="WizardFlash.RestoreTitle" xml:space="preserve">
+    <value>Restore USB Drive</value>
+  </data>
+  
+  <!-- Partition Resize Status -->
+  <data name="Status.ResizingPartition" xml:space="preserve">
+    <value>⠋ Resizing partition...</value>
+  </data>
+  
+  <!-- Button Resume Text -->
+  <data name="Button.Resume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  
+  <!-- Main Window Button Strings -->
+  <data name="Main.DownloadISO" xml:space="preserve">
+    <value>Download Image</value>
+  </data>
+  <data name="Main.FlashUSB" xml:space="preserve">
+    <value>Flash USB</value>
+  </data>
+  <data name="Main.ResizePartition" xml:space="preserve">
+    <value>Resize Partition</value>
+  </data>
+  <data name="Main.InstallWinBTRFS" xml:space="preserve">
+    <value>Install WinBTRFS</value>
+  </data>
+  <data name="Main.Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Main.ClearLog" xml:space="preserve">
+    <value>Clear Log</value>
+  </data>
+  
+  <!-- Main Window Label Strings -->
+  <data name="Main.USBDrives" xml:space="preserve">
+    <value>USB Drives:</value>
+  </data>
+  <data name="Main.PartitionSize" xml:space="preserve">
+    <value>Size (GB):</value>
+  </data>
+  <data name="Main.Ready" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="Main.Title" xml:space="preserve">
+    <value>BlossomPrep Tool</value>
+  </data>
+  
+  <!-- Language Selection Form -->
+  <data name="Form.SelectLanguage" xml:space="preserve">
+    <value>Select Language</value>
+  </data>
+  
+  <!-- Disk Info Labels -->
+  <data name="WizardPartition.DiskInfo" xml:space="preserve">
+    <value>C: Drive: {0:F1} GB total, {1:F1} GB used, {2:F1} GB free</value>
+  </data>
+  <data name="WizardUSBSelection.Selected" xml:space="preserve">
+    <value>Selected: Disk {0} ({1}GB)</value>
+  </data>
+  <data name="WizardUSBSelection.NoUSB" xml:space="preserve">
+    <value>No USB selected</value>
   </data>
 </root>

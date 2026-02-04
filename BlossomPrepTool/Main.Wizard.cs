@@ -65,13 +65,13 @@ namespace BlossomPrepTool
                 if (wizardUsbSelectionView.DriveComboBox.SelectedIndex >= 0 && _usbDiskMap.ContainsKey(wizardUsbSelectionView.DriveComboBox.SelectedIndex))
                 {
                     var drive = _usbDiskMap[wizardUsbSelectionView.DriveComboBox.SelectedIndex];
-                    wizardUsbSelectionView.SelectedLabel.Text = $"Selected: Disk {drive.DiskNumber} ({drive.SizeGB}GB)";
+                    wizardUsbSelectionView.SelectedLabel.Text = Localizer.GetString("WizardUSBSelection.Selected", drive.DiskNumber, drive.SizeGB);
                     wizardUsbSelectionView.SelectedLabel.ForeColor = SuccessColor;
                     wizardUsbSelectionView.NextButton.Enabled = true;
                 }
                 else
                 {
-                    wizardUsbSelectionView.SelectedLabel.Text = "No USB selected";
+                    wizardUsbSelectionView.SelectedLabel.Text = Localizer.GetString("WizardUSBSelection.NoUSB");
                     wizardUsbSelectionView.SelectedLabel.ForeColor = TextSecondary;
                     wizardUsbSelectionView.NextButton.Enabled = false;
                 }
@@ -203,15 +203,15 @@ namespace BlossomPrepTool
                     {
                         wizardFlashView.StartButton.Visible = false;
                         wizardFlashView.BackButton.Enabled = false;
-                        wizardFlashView.TitleLabel.Text = "Restore USB Drive";
-                        wizardFlashView.DescriptionLabel.Text = "Restoring your USB drive to normal Windows format. All data will be erased.";
+                        wizardFlashView.TitleLabel.Text = Localizer.GetString("WizardFlash.RestoreTitle");
+                        wizardFlashView.DescriptionLabel.Text = Localizer.GetString("Message.RestoreUSB");
                     }
                     else
                     {
                         wizardFlashView.StartButton.Visible = true;
                         wizardFlashView.BackButton.Enabled = true;
                         wizardFlashView.TitleLabel.Text = "Flash USB Drive";
-                        wizardFlashView.DescriptionLabel.Text = "This will write the ISO to your USB drive. All data will be erased.";
+                        wizardFlashView.DescriptionLabel.Text = Localizer.GetString("WizardFlash.Description");
                     }
                     break;
                 case WizardStep.Settings:
@@ -232,14 +232,14 @@ namespace BlossomPrepTool
 
         private async void ExecuteDownloadISO()
         {
-            wizardDownloadView.StatusLabel.Text = "⠋ Checking for cached ISO...";
+            wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.CheckingCache");
             wizardDownloadView.StatusLabel.ForeColor = WarningColor;
             wizardDownloadView.ProgressBar.Value = 0;
             wizardDownloadView.NextButton.Enabled = false;
             wizardDownloadView.PauseButton.Enabled = false;
             wizardDownloadView.CancelButton.Enabled = true;
             wizardDownloadView.BackButton.Enabled = false;
-            wizardDownloadView.PauseButton.Text = "Pause";
+            wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Pause");
             _isDownloadPaused = false;
             StartSpinner(wizardDownloadView.StatusLabel);
 
@@ -262,7 +262,7 @@ namespace BlossomPrepTool
             {
                 await Task.Run(async () =>
                 {
-                    // Check if ISO is already cached and valid
+                    // Check if image is already cached and valid
                     var isCached = await _preptool.IsISOCached();
 
                     if (isCached)
@@ -271,24 +271,24 @@ namespace BlossomPrepTool
                         {
                             StopSpinner();
                             wizardDownloadView.ProgressBar.Value = 100;
-                            wizardDownloadView.StatusLabel.Text = "✓ Cached ISO verified successfully!";
+                            wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.CacheVerified");
                             wizardDownloadView.StatusLabel.ForeColor = SuccessColor;
                             wizardDownloadView.NextButton.Enabled = true;
                             wizardDownloadView.PauseButton.Enabled = false;
                             wizardDownloadView.CancelButton.Enabled = false;
                             wizardDownloadView.BackButton.Enabled = true;
-                            wizardDownloadView.PauseButton.Text = "Pause";
+                            wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Pause");
                             _isDownloadPaused = false;
                             _completedSteps++;
-                            LogMessage("Using cached ISO");
+                            LogMessage(Localizer.GetString("Status.UsingCached"));
                         }));
                         return;
                     }
 
-                    // ISO not cached, proceed with download
+                    // Image not cached, proceed with download
                     this.Invoke(new Action(() =>
                     {
-                        wizardDownloadView.StatusLabel.Text = "⠋ Starting download...";
+                        wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.StartingDownload");
                         wizardDownloadView.StatusLabel.ForeColor = WarningColor;
                         wizardDownloadView.ProgressBar.Value = 0;
                         wizardDownloadView.PauseButton.Enabled = true;
@@ -301,16 +301,16 @@ namespace BlossomPrepTool
                     {
                         StopSpinner();
                         wizardDownloadView.ProgressBar.Value = 100;
-                        wizardDownloadView.StatusLabel.Text = "✓ ISO downloaded successfully!";
+                        wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.DownloadSuccess");
                         wizardDownloadView.StatusLabel.ForeColor = SuccessColor;
                         wizardDownloadView.NextButton.Enabled = true;
                         wizardDownloadView.PauseButton.Enabled = false;
                         wizardDownloadView.CancelButton.Enabled = false;
                         wizardDownloadView.BackButton.Enabled = true;
-                        wizardDownloadView.PauseButton.Text = "Pause";
+                        wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Pause");
                         _isDownloadPaused = false;
                         _completedSteps++;
-                        LogMessage($"ISO: {isoPath}");
+                        LogMessage($"Image: {isoPath}");
                     }));
                 }, _cancellationTokenSource.Token);
             }
@@ -319,13 +319,13 @@ namespace BlossomPrepTool
                 this.Invoke(new Action(() =>
                 {
                     StopSpinner();
-                    wizardDownloadView.StatusLabel.Text = "⊘ Download cancelled";
+                    wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.DownloadCancelled");
                     wizardDownloadView.StatusLabel.ForeColor = TextSecondary;
                     wizardDownloadView.NextButton.Enabled = false;
                     wizardDownloadView.PauseButton.Enabled = false;
                     wizardDownloadView.CancelButton.Enabled = false;
                     wizardDownloadView.BackButton.Enabled = true;
-                    wizardDownloadView.PauseButton.Text = "Pause";
+                    wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Pause");
                     _isDownloadPaused = false;
                 }));
             }
@@ -358,8 +358,8 @@ namespace BlossomPrepTool
             {
                 _preptool.ResumeISODownload();
                 _isDownloadPaused = false;
-                wizardDownloadView.PauseButton.Text = "Pause";
-                wizardDownloadView.StatusLabel.Text = "⠋ Resuming download...";
+                wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Pause");
+                wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.ResumeDownload");
                 wizardDownloadView.StatusLabel.ForeColor = WarningColor;
                 StartSpinner(wizardDownloadView.StatusLabel);
             }
@@ -367,8 +367,8 @@ namespace BlossomPrepTool
             {
                 _preptool.PauseISODownload();
                 _isDownloadPaused = true;
-                wizardDownloadView.PauseButton.Text = "Resume";
-                wizardDownloadView.StatusLabel.Text = "⏸ Download paused";
+                wizardDownloadView.PauseButton.Text = Localizer.GetString("Button.Resume");
+                wizardDownloadView.StatusLabel.Text = Localizer.GetString("Status.DownloadPaused");
                 wizardDownloadView.StatusLabel.ForeColor = TextSecondary;
                 StopSpinner();
             }
@@ -453,7 +453,7 @@ namespace BlossomPrepTool
             // Disable UI during restore
             this.ControlBox = false;
 
-            wizardFlashView.StatusLabel.Text = "⠋ Restoring USB drive...";
+            wizardFlashView.StatusLabel.Text = Localizer.GetString("Status.RestoringUSB");
             wizardFlashView.StatusLabel.ForeColor = WarningColor;
             StartSpinner(wizardFlashView.StatusLabel);
 
@@ -466,7 +466,7 @@ namespace BlossomPrepTool
                     StopSpinner();
                     if (result)
                     {
-                        wizardFlashView.StatusLabel.Text = "✓ USB drive restored successfully!";
+                        wizardFlashView.StatusLabel.Text = Localizer.GetString("Status.RestoreSuccess");
                         wizardFlashView.StatusLabel.ForeColor = SuccessColor;
                         LogMessage($"USB Disk {selectedDrive.DiskNumber}: Restored to Windows USB");
 
@@ -477,7 +477,7 @@ namespace BlossomPrepTool
                     }
                     else
                     {
-                        wizardFlashView.StatusLabel.Text = "✗ USB restore failed";
+                        wizardFlashView.StatusLabel.Text = Localizer.GetString("Status.RestoreFailed");
                         wizardFlashView.StatusLabel.ForeColor = ErrorColor;
                         LogMessage("USB restore failed");
 
@@ -534,7 +534,7 @@ namespace BlossomPrepTool
             wizardFlashView.StartButton.Enabled = false;
             this.ControlBox = false;
 
-            wizardFlashView.StatusLabel.Text = "⠋ Flashing USB...";
+            wizardFlashView.StatusLabel.Text = Localizer.GetString("Status.FlashingUSB");
             wizardFlashView.StatusLabel.ForeColor = WarningColor;
             StartSpinner(wizardFlashView.StatusLabel);
 
@@ -552,14 +552,14 @@ namespace BlossomPrepTool
                         this.ControlBox = true;
                         if (result)
                         {
-                            wizardFlashView.StatusLabel.Text = "✓ USB flashed successfully!";
+                            wizardFlashView.StatusLabel.Text = Localizer.GetString("Status.FlashSuccess");
                             wizardFlashView.StatusLabel.ForeColor = SuccessColor;
                             _completedSteps++;
                             LogMessage($"USB Disk {selectedDrive.DiskNumber}: Flash complete");
                         }
                         else
                         {
-                            wizardFlashView.StatusLabel.Text = "✗ Flash operation failed";
+                            wizardFlashView.StatusLabel.Text = Localizer.GetString("Status.FlashFailed");
                             wizardFlashView.StatusLabel.ForeColor = ErrorColor;
                             wizardFlashView.BackButton.Enabled = true;
                             wizardFlashView.StartButton.Enabled = true;
@@ -593,7 +593,7 @@ namespace BlossomPrepTool
                     this.ControlBox = true;
                     wizardFlashView.BackButton.Enabled = true;
                     wizardFlashView.StartButton.Enabled = true;
-                    wizardFlashView.StatusLabel.Text = "⊘ Flash cancelled";
+                    wizardFlashView.StatusLabel.Text = Localizer.GetString("Status.FlashCancelled");
                     wizardFlashView.StatusLabel.ForeColor = TextSecondary;
                 }));
             }
@@ -618,8 +618,8 @@ namespace BlossomPrepTool
             try
             {
                 var sizeInfo = await _preptool.GetCDriveSizeInfo();
-                wizardPartitionView.DiskInfoLabel.Text = 
-                    $"C: Drive: {sizeInfo.TotalSizeGB:F1} GB total, {sizeInfo.UsedSpaceGB:F1} GB used, {sizeInfo.FreeSpaceGB:F1} GB free";
+                wizardPartitionView.DiskInfoLabel.Text = Localizer.GetString("WizardPartition.DiskInfo", 
+                    sizeInfo.TotalSizeGB, sizeInfo.UsedSpaceGB, sizeInfo.FreeSpaceGB);
                 wizardPartitionView.DiskInfoLabel.ForeColor = SuccessColor;
                 
                 // Set default allocation to 50GB or 20% of free space, whichever is larger

@@ -20,7 +20,7 @@ namespace BlossomPrepTool
 
         private void InitializeComponent()
         {
-            this.Text = "Select Language";
+            this.Text = Localizer.GetString("Form.SelectLanguage");
             this.Size = new Size(400, 250);
             this.StartPosition = FormStartPosition.CenterParent;
             this.ShowIcon = false;

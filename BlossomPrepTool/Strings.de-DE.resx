@@ -321,4 +321,138 @@ Fortfahren?</value>
   <data name="Button.ApplySettings" xml:space="preserve">
     <value>Einstellungen anwenden</value>
   </data>
+  
+  <!-- Statusmeldungen -->
+  <data name="Status.Processing" xml:space="preserve">
+    <value>Wird verarbeitet...</value>
+  </data>
+  <data name="Status.CheckingCache" xml:space="preserve">
+    <value>⠋ Überprüfe gecachtes Abbild...</value>
+  </data>
+  <data name="Status.CacheVerified" xml:space="preserve">
+    <value>✓ Gecachtes Abbild erfolgreich verifiziert!</value>
+  </data>
+  <data name="Status.UsingCached" xml:space="preserve">
+    <value>Verwende gecachtes Abbild</value>
+  </data>
+  
+  <!-- Abschlussseite / Finish Strings -->
+  <data name="WizardComplete.QRMessage" xml:space="preserve">
+    <value>Scanne mit deinem Mobilgerät
+für Video-Tutorial</value>
+  </data>
+  <data name="WizardComplete.KeepUSB" xml:space="preserve">
+    <value>💡 Wichtig: Bewahre dein USB-Laufwerk sicher auf - es kann zum Neuinstallieren oder Wiederherstellen von BlossomOS verwendet werden.</value>
+  </data>
+  <data name="WizardComplete.Message" xml:space="preserve">
+    <value>Dein USB-Laufwerk ist startbereit!</value>
+  </data>
+  
+  <!-- Download-Statusmeldungen -->
+  <data name="Status.StartingDownload" xml:space="preserve">
+    <value>⠋ Starte Download...</value>
+  </data>
+  <data name="Status.DownloadSuccess" xml:space="preserve">
+    <value>✓ Abbild erfolgreich heruntergeladen!</value>
+  </data>
+  <data name="Status.DownloadCancelled" xml:space="preserve">
+    <value>⊘ Download abgebrochen</value>
+  </data>
+  <data name="Status.ResumeDownload" xml:space="preserve">
+    <value>⠋ Setze Download fort...</value>
+  </data>
+  <data name="Status.DownloadPaused" xml:space="preserve">
+    <value>⏸ Download unterbrochen</value>
+  </data>
+  
+  <!-- Flash/Restore Statusmeldungen -->
+  <data name="Status.RestoringUSB" xml:space="preserve">
+    <value>⠋ Stelle USB-Laufwerk wieder her...</value>
+  </data>
+  <data name="Status.RestoreSuccess" xml:space="preserve">
+    <value>✓ USB-Laufwerk erfolgreich wiederhergestellt!</value>
+  </data>
+  <data name="Status.RestoreFailed" xml:space="preserve">
+    <value>✗ Wiederherstellung des USB-Laufwerks fehlgeschlagen</value>
+  </data>
+  <data name="Status.FlashingUSB" xml:space="preserve">
+    <value>⠋ Flashe USB-Laufwerk...</value>
+  </data>
+  <data name="Status.FlashSuccess" xml:space="preserve">
+    <value>✓ USB-Laufwerk erfolgreich geflasht!</value>
+  </data>
+  <data name="Status.FlashFailed" xml:space="preserve">
+    <value>✗ Flash-Vorgang fehlgeschlagen</value>
+  </data>
+  <data name="Status.FlashCancelled" xml:space="preserve">
+    <value>⊘ Flashen abgebrochen</value>
+  </data>
+  
+  <!-- Wiederherstellungsvorgangs-Strings -->
+  <data name="Message.RestoreUSB" xml:space="preserve">
+    <value>Dein USB-Laufwerk wird in das normale Windows-Format zurückversetzt. Alle Daten werden gelöscht.</value>
+  </data>
+  <data name="WizardFlash.RestoreTitle" xml:space="preserve">
+    <value>USB-Laufwerk wiederherstellen</value>
+  </data>
+  
+  <!-- Partitionsgröße Statusänderung -->
+  <data name="Status.ResizingPartition" xml:space="preserve">
+    <value>⠋ Ändere Partitionsgröße...</value>
+  </data>
+  
+  <!-- Button Fortsetzen Text -->
+  <data name="Button.Resume" xml:space="preserve">
+    <value>Fortsetzen</value>
+  </data>
+  
+  <!-- Hauptfenster Button-Zeichenketten -->
+  <data name="Main.DownloadISO" xml:space="preserve">
+    <value>Abbild herunterladen</value>
+  </data>
+  <data name="Main.FlashUSB" xml:space="preserve">
+    <value>USB flashen</value>
+  </data>
+  <data name="Main.ResizePartition" xml:space="preserve">
+    <value>Partition ändern</value>
+  </data>
+  <data name="Main.InstallWinBTRFS" xml:space="preserve">
+    <value>WinBTRFS installieren</value>
+  </data>
+  <data name="Main.Refresh" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="Main.ClearLog" xml:space="preserve">
+    <value>Protokoll löschen</value>
+  </data>
+  
+  <!-- Hauptfenster Label-Zeichenketten -->
+  <data name="Main.USBDrives" xml:space="preserve">
+    <value>USB-Laufwerke:</value>
+  </data>
+  <data name="Main.PartitionSize" xml:space="preserve">
+    <value>Größe (GB):</value>
+  </data>
+  <data name="Main.Ready" xml:space="preserve">
+    <value>Bereit</value>
+  </data>
+  <data name="Main.Title" xml:space="preserve">
+    <value>BlossomPrep Tool</value>
+  </data>
+  
+  <!-- Sprachauswahl-Formular -->
+  <data name="Form.SelectLanguage" xml:space="preserve">
+    <value>Sprache auswählen</value>
+  </data>
+  
+  <!-- Festplatteninformationen Labels -->
+  <data name="WizardPartition.DiskInfo" xml:space="preserve">
+    <value>C: Laufwerk: {0:F1} GB Gesamt, {1:F1} GB verwendet, {2:F1} GB frei</value>
+  </data>
+  <data name="WizardUSBSelection.Selected" xml:space="preserve">
+    <value>Ausgewählt: Datenträger {0} ({1}GB)</value>
+  </data>
+  <data name="WizardUSBSelection.NoUSB" xml:space="preserve">
+    <value>Kein USB ausgewählt</value>
+  </data>
 </root>

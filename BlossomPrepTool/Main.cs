@@ -77,11 +77,12 @@ namespace BlossomPrepTool
         private int _spinnerFrame = 0;
         private readonly string[] _spinnerFrames = new[] { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
         private Label _currentSpinnerLabel;
-        private string _spinnerBaseMessage = "Processing...";
+        private string _spinnerBaseMessage;
 
         public Main()
         {
             InitializeComponent();
+            _spinnerBaseMessage = Localizer.GetString("Status.Processing");
 
             this.SetStyle(ControlStyles.ResizeRedraw, true);
             this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
@@ -97,6 +98,7 @@ namespace BlossomPrepTool
 
             InitializeFadeStates();
             ApplyDarkTheme();
+            ApplyMainWindowLocalization();
             SetupButtonHoverEffects();
             InitializeWizardPages();
             
@@ -313,6 +315,28 @@ namespace BlossomPrepTool
                 btn.FlatAppearance.MouseDownBackColor = btn.BackColor;
                 btn.FlatAppearance.MouseOverBackColor = btn.BackColor;
             }
+        }
+
+        private void ApplyMainWindowLocalization()
+        {
+            // Main window title
+            this.Text = Localizer.GetString("Main.Title");
+
+            // Button text
+            btnDownloadISO.Text = Localizer.GetString("Main.DownloadISO");
+            btnFlashUSB.Text = Localizer.GetString("Main.FlashUSB");
+            btnResizePartition.Text = Localizer.GetString("Main.ResizePartition");
+            btnInstallWinBTRFS.Text = Localizer.GetString("Main.InstallWinBTRFS");
+            btnRefreshUSB.Text = Localizer.GetString("Main.Refresh");
+            btnClearLog.Text = Localizer.GetString("Main.ClearLog");
+
+            // Label text
+            lblUSBDrives.Text = Localizer.GetString("Main.USBDrives");
+            lblPartitionSize.Text = Localizer.GetString("Main.PartitionSize");
+            lblISOStatus.Text = Localizer.GetString("Main.Ready");
+            lblFlashStatus.Text = Localizer.GetString("Main.Ready");
+            lblPartitionStatus.Text = Localizer.GetString("Main.Ready");
+            lblWinBTRFSStatus.Text = Localizer.GetString("Main.Ready");
         }
 
         private void ButtonEnabledChanged(object sender, EventArgs e)

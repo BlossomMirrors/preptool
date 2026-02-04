@@ -34,10 +34,12 @@ namespace BlossomPrepTool
             this.lblDiskInfo = new System.Windows.Forms.Label();
             this.lblAllocateLabel = new System.Windows.Forms.Label();
             this.txtAllocateGB = new System.Windows.Forms.TextBox();
+            this.trkAllocateGB = new System.Windows.Forms.TrackBar();
             this.lblGBLabel = new System.Windows.Forms.Label();
             this.lblStatus = new System.Windows.Forms.Label();
             this.btnNext = new System.Windows.Forms.Button();
             this.btnBack = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.trkAllocateGB)).BeginInit();
             this.cardMain.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -49,6 +51,7 @@ namespace BlossomPrepTool
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cardMain.Controls.Add(this.lblStatus);
             this.cardMain.Controls.Add(this.lblGBLabel);
+            this.cardMain.Controls.Add(this.trkAllocateGB);
             this.cardMain.Controls.Add(this.txtAllocateGB);
             this.cardMain.Controls.Add(this.lblAllocateLabel);
             this.cardMain.Controls.Add(this.lblDiskInfo);
@@ -122,6 +125,17 @@ namespace BlossomPrepTool
             this.txtAllocateGB.Text = "50";
             this.txtAllocateGB.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
+            // trkAllocateGB
+            // 
+            this.trkAllocateGB.Location = new System.Drawing.Point(220, 205);
+            this.trkAllocateGB.Maximum = 500;
+            this.trkAllocateGB.Minimum = 20;
+            this.trkAllocateGB.Name = "trkAllocateGB";
+            this.trkAllocateGB.Size = new System.Drawing.Size(300, 45);
+            this.trkAllocateGB.TabIndex = 7;
+            this.trkAllocateGB.Value = 50;
+            this.trkAllocateGB.Scroll += new System.EventHandler(this.trkAllocateGB_Scroll);
+            // 
             // lblGBLabel
             // 
             this.lblGBLabel.AutoSize = true;
@@ -188,6 +202,7 @@ namespace BlossomPrepTool
             this.Controls.Add(this.cardMain);
             this.Name = "WizardPartitionView";
             this.Size = new System.Drawing.Size(800, 600);
+            ((System.ComponentModel.ISupportInitialize)(this.trkAllocateGB)).EndInit();
             this.cardMain.ResumeLayout(false);
             this.cardMain.PerformLayout();
             this.ResumeLayout(false);
@@ -202,6 +217,7 @@ namespace BlossomPrepTool
         private System.Windows.Forms.Label lblDiskInfo;
         private System.Windows.Forms.Label lblAllocateLabel;
         private System.Windows.Forms.TextBox txtAllocateGB;
+        private System.Windows.Forms.TrackBar trkAllocateGB;
         private System.Windows.Forms.Label lblGBLabel;
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Button btnNext;

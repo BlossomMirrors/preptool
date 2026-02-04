@@ -153,14 +153,14 @@ namespace BlossomPrepTool
         }
 
         /// <summary>
-        /// Resize C: partition
+        /// Resize C: partition (shrink by the specified amount)
         /// </summary>
-        public async Task<bool> ResizePartition(double targetFreeSpaceGB, bool autoOptimize = false)
+        public async Task<bool> ResizePartition(double shrinkAmountGB, bool autoOptimize = false)
         {
-            OnStatusChanged($"Starting partition resize (target free space: {targetFreeSpaceGB}GB)...");
+            OnStatusChanged($"Starting partition resize (shrinking by: {shrinkAmountGB}GB)...");
             try
             {
-                var result = await _partitionManager.ResizePartition(targetFreeSpaceGB, autoOptimize);
+                var result = await _partitionManager.ResizePartition(shrinkAmountGB, autoOptimize);
                 if (result)
                     OnStatusChanged("Partition resize completed");
                 else

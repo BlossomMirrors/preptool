@@ -21,6 +21,16 @@ namespace BlossomPrepTool
             ApplyLocalization();
             ApplyRoundedCorners();
             FixLabelTransparency();
+            
+            // Sync TrackBar with TextBox
+            txtAllocateGB.TextChanged += (s, e) =>
+            {
+                if (int.TryParse(txtAllocateGB.Text, out int value))
+                {
+                    trkAllocateGB.Value = Math.Max(trkAllocateGB.Minimum, Math.Min(trkAllocateGB.Maximum, value));
+                }
+            };
+            
             this.SizeChanged += (s, e) => 
             {
                 ApplyRoundedCorners();
@@ -89,6 +99,11 @@ namespace BlossomPrepTool
         private void btnBack_Click(object sender, EventArgs e)
         {
             BackClicked?.Invoke(this, e);
+        }
+
+        private void trkAllocateGB_Scroll(object sender, EventArgs e)
+        {
+            txtAllocateGB.Text = trkAllocateGB.Value.ToString();
         }
     }
 }

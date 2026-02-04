@@ -684,7 +684,7 @@ namespace BlossomPrepTool
                     {
                         wizardPartitionView.StatusLabel.Text = Localizer.GetString("Status.PartitionResizeSuccess");
                         wizardPartitionView.StatusLabel.ForeColor = SuccessColor;
-                        LogMessage($"Partition resized: {allocateGB}GB allocated for BlossomOS");
+                        LogMessage($"Partition shrunk by {allocateGB}GB");
                         
                         Task.Delay(1000).ContinueWith(_ =>
                         {

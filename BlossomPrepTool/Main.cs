@@ -84,6 +84,12 @@ namespace BlossomPrepTool
             InitializeComponent();
             _spinnerBaseMessage = Localizer.GetString("Status.Processing");
 
+            // Sync TrackBar with NumericUpDown
+            numPartitionSize.ValueChanged += (s, e) => 
+            {
+                trkPartitionSize.Value = (int)numPartitionSize.Value;
+            };
+
             this.SetStyle(ControlStyles.ResizeRedraw, true);
             this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             this.SetStyle(ControlStyles.UserPaint, true);
@@ -760,7 +766,18 @@ namespace BlossomPrepTool
 
         private async void btnResizePartition_Click(object sender, EventArgs e)
         {
+            // Get drive info to validate user input
+            var driveInfo = await _preptool.GetCDriveSizeInfo();
             var targetSize = (double)numPartitionSize.Value;
+
+            // Validate input
+            if (targetSize > driveInfo.FreeSpaceGB)
+            {
+                MessageBox.Show(
+                    $"The shrink amount ({targetSize}GB) exceeds available free space ({driveInfo.FreeSpaceGB}GB).\n\nPlease enter a value less than or equal to {driveInfo.FreeSpaceGB}GB.",
+                    "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             if (MessageBox.Show(
                 Localizer.GetString("Message.PartitionResizeWarning"),
@@ -787,7 +804,7 @@ namespace BlossomPrepTool
                             lblPartitionStatus.Text = "✓ Partition resized! Restart required.";
                             lblPartitionStatus.ForeColor = SuccessColor;
                             _completedSteps++;
-                            LogMessage($"Partition resized to {targetSize}GB free space");
+                            LogMessage($"Partition shrunk by {targetSize}GB");
                         }
                         else
                         {
@@ -983,6 +1000,10 @@ namespace BlossomPrepTool
             };
         }
 
+        private void trkPartitionSize_Scroll(object sender, EventArgs e)
+        {
+            numPartitionSize.Value = trkPartitionSize.Value;
+        }
         private static void CardPaintHandler(object sender, PaintEventArgs e)
         {
             // Placeholder handler for removal

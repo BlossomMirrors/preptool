@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Management;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -40,15 +41,56 @@ namespace BlossomPrepTool
                     var freeBytes = driveInfo.AvailableFreeSpace;
                     var usedBytes = totalBytes - freeBytes;
 
-                    ReportProgress("Retrieved C: drive info", "info");
+                    // Query WMI to get disk and partition numbers for C: drive
+                    int diskNumber = 0;
+                    int partitionNumber = 1;
+                    
+                    try
+                    {
+                        // Map the logical disk to its partition, then get disk info
+                        using (var searcher = new ManagementObjectSearcher(
+                            "SELECT Antecedent, Dependent FROM Win32_LogicalDiskToPartition"))
+                        {
+                            var collection = searcher.Get();
+                            foreach (var obj in collection)
+                            {
+                                string dependent = obj["Dependent"].ToString();
+                                if (dependent.Contains("C:"))
+                                {
+                                    // Extract partition name and query its disk info
+                                    string partitionName = dependent.Split('"')[1];
+                                    using (var diskPartitionSearcher = new ManagementObjectSearcher(
+                                        $"SELECT DiskIndex, Index FROM Win32_DiskPartition WHERE Name='{partitionName}'"))
+                                    {
+                                        var diskPartitions = diskPartitionSearcher.Get();
+                                        foreach (var diskPart in diskPartitions)
+                                        {
+                                            diskNumber = Convert.ToInt32(diskPart["DiskIndex"]);
+                                            partitionNumber = Convert.ToInt32(diskPart["Index"]);
+                                            break;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception wmiEx)
+                    {
+                        ReportProgress($"Warning: Could not retrieve partition info from WMI: {wmiEx.Message}. Using defaults (Disk 0, Partition 1).", "warning");
+                        diskNumber = 0;
+                        partitionNumber = 1;
+                    }
+
+                    ReportProgress($"Retrieved C: drive info (Disk {diskNumber}, Partition {partitionNumber})", "info");
 
                     return new DriveSizeInfo
                     {
                         TotalSizeGB = Math.Round(totalBytes / (1024.0 * 1024.0 * 1024.0), 2),
                         FreeSpaceGB = Math.Round(freeBytes / (1024.0 * 1024.0 * 1024.0), 2),
                         UsedSpaceGB = Math.Round(usedBytes / (1024.0 * 1024.0 * 1024.0), 2),
-                        DiskNumber = 0, // Will be retrieved from WMI
-                        PartitionNumber = 1 // Assuming C: is partition 1
+                        DiskNumber = diskNumber,
+                        PartitionNumber = partitionNumber
                     };
                 }
                 catch (Exception ex)
@@ -59,7 +101,7 @@ namespace BlossomPrepTool
             });
         }
 
-        public async Task<bool> ResizePartition(double targetFreeSpaceGB, bool autoOptimize = false)
+        public async Task<bool> ResizePartition(double shrinkAmountGB, bool autoOptimize = false)
         {
             try
             {
@@ -71,38 +113,34 @@ namespace BlossomPrepTool
                     "info");
 
                 // Validate
-                if (targetFreeSpaceGB <= 0)
-                    throw new Exception("Free space must be > 0GB");
+                if (shrinkAmountGB <= 0)
+                    throw new Exception("Shrink amount must be > 0GB");
+
+                if (shrinkAmountGB > driveInfo.FreeSpaceGB)
+                    throw new Exception($"Shrink amount ({shrinkAmountGB}GB) exceeds available free space ({driveInfo.FreeSpaceGB}GB). Please enter a smaller value.");
 
                 const double minWindowsSize = 20.0; // Keep at least 20GB for Windows
-                var maxAllowedShrink = driveInfo.TotalSizeGB - minWindowsSize;
+                var resultingPartitionGB = driveInfo.TotalSizeGB - shrinkAmountGB;
 
-                if (targetFreeSpaceGB > maxAllowedShrink)
+                if (resultingPartitionGB < minWindowsSize)
                 {
-                    ReportProgress(
-                        $"Requested partition exceeds available space, using maximum: {maxAllowedShrink}GB",
-                        "warning");
-                    targetFreeSpaceGB = maxAllowedShrink;
+                    throw new Exception($"Resulting partition would be below {minWindowsSize}GB minimum. Maximum shrink allowed: {driveInfo.TotalSizeGB - minWindowsSize}GB");
                 }
 
-                var resultingPartitionGB = driveInfo.TotalSizeGB - targetFreeSpaceGB;
-                if (resultingPartitionGB < minWindowsSize)
-                    throw new Exception($"Resulting partition would be below {minWindowsSize}GB minimum");
-
                 ReportProgress(
-                    $"Shrink parameters - Free space requested: {targetFreeSpaceGB}GB, resulting C: size: {resultingPartitionGB}GB",
+                    $"Shrink parameters - Shrinking by: {shrinkAmountGB}GB, resulting C: size: {resultingPartitionGB}GB",
                     "info");
 
-                // Optional auto-optimize
-                if (autoOptimize && targetFreeSpaceGB > (driveInfo.FreeSpaceGB - 2))
+                // Optional auto-optimize: run when shrink amount exceeds current free space
+                if (autoOptimize && shrinkAmountGB > driveInfo.FreeSpaceGB)
                 {
-                    ReportProgress("Auto-optimizing disk...", "info");
+                    ReportProgress("Auto-optimizing disk to free up space...", "info");
                     await DisableHibernation();
                     await RunDefragmentation();
                 }
 
-                // Execute shrink
-                return await ExecuteShrink(targetFreeSpaceGB);
+                // Execute shrink with detected disk and partition numbers
+                return await ExecuteShrink(shrinkAmountGB, driveInfo.DiskNumber, driveInfo.PartitionNumber);
             }
             catch (Exception ex)
             {
@@ -111,20 +149,20 @@ namespace BlossomPrepTool
             }
         }
 
-        private async Task<bool> ExecuteShrink(double targetFreeSpaceGB)
+        private async Task<bool> ExecuteShrink(double shrinkAmountGB, int diskNumber, int partitionNumber)
         {
             return await Task.Run(() =>
             {
                 try
                 {
-                    var shrinkMB = (long)(targetFreeSpaceGB * 1024);
+                    var shrinkMB = (long)(shrinkAmountGB * 1024);
                     var scriptPath = Path.Combine(Path.GetTempPath(), $"diskpart_{Guid.NewGuid()}.txt");
 
-                    // Create diskpart script
+                    // Create diskpart script using detected disk and partition numbers
                     var diskpartScript = new StringBuilder();
-                    diskpartScript.AppendLine("select disk 0");
-                    diskpartScript.AppendLine("select partition 2"); // Assuming C: is partition 2 on system disk
-                    diskpartScript.AppendLine($"shrink desired={shrinkMB}");
+                    diskpartScript.AppendLine($"select disk {diskNumber}");
+                    diskpartScript.AppendLine($"select partition {partitionNumber}");
+                    diskpartScript.AppendLine($"shrink desired={shrinkMB} minimum=100");
 
                     File.WriteAllText(scriptPath, diskpartScript.ToString(), Encoding.ASCII);
 
@@ -133,9 +171,10 @@ namespace BlossomPrepTool
                         var output = RunCommand("diskpart.exe", $"/s \"{scriptPath}\"");
                         ReportProgress("Diskpart output: " + output, "info");
 
-                        if (output.IndexOf("error", StringComparison.OrdinalIgnoreCase) >= 0)
+                        if (output.IndexOf("error", StringComparison.OrdinalIgnoreCase) >= 0 || 
+                            output.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            ReportProgress("Shrink operation reported an error", "error");
+                            ReportProgress("Shrink operation reported an error. Please ensure the partition has enough contiguous free space.", "error");
                             return false;
                         }
 
@@ -197,7 +236,7 @@ namespace BlossomPrepTool
                     var psi = new ProcessStartInfo
                     {
                         FileName = "defrag.exe",
-                        Arguments = "C: /X",
+                        Arguments = "C:",
                         UseShellExecute = false,
                         CreateNoWindow = true,
                         RedirectStandardOutput = true
@@ -207,9 +246,9 @@ namespace BlossomPrepTool
                     {
                         process.WaitForExit();
                         if (process.ExitCode == 0)
-                            ReportProgress("Defragmentation completed", "success");
+                            ReportProgress("Defragmentation completed successfully", "success");
                         else
-                            ReportProgress("Defragmentation completed with warnings", "warning");
+                            ReportProgress("Defragmentation completed with exit code: " + process.ExitCode, "warning");
                     }
                 }
                 catch (Exception ex)

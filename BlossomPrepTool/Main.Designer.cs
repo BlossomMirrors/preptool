@@ -44,6 +44,7 @@
             this.lblWinBTRFSStatus = new System.Windows.Forms.Label();
             this.cmbUSBDrives = new System.Windows.Forms.ComboBox();
             this.numPartitionSize = new System.Windows.Forms.NumericUpDown();
+            this.trkPartitionSize = new System.Windows.Forms.TrackBar();
             this.lstLog = new System.Windows.Forms.ListBox();
             this.lblUSBDrives = new System.Windows.Forms.Label();
             this.lblPartitionSize = new System.Windows.Forms.Label();
@@ -61,6 +62,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.maximize_normalize)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.minimize)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPartitionSize)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trkPartitionSize)).BeginInit();
             this.SuspendLayout();
             // 
             // close
@@ -227,6 +229,17 @@
             0,
             0});
             // 
+            // trkPartitionSize
+            // 
+            this.trkPartitionSize.Location = new System.Drawing.Point(175, 138);
+            this.trkPartitionSize.Maximum = 500;
+            this.trkPartitionSize.Minimum = 20;
+            this.trkPartitionSize.Name = "trkPartitionSize";
+            this.trkPartitionSize.Size = new System.Drawing.Size(200, 45);
+            this.trkPartitionSize.TabIndex = 12;
+            this.trkPartitionSize.Value = 50;
+            this.trkPartitionSize.Scroll += new System.EventHandler(this.trkPartitionSize_Scroll);
+            // 
             // lstLog
             // 
             this.lstLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -367,6 +380,7 @@
             this.Controls.Add(this.btnInstallWinBTRFS);
             this.Controls.Add(this.lblPartitionStatus);
             this.Controls.Add(this.btnResizePartition);
+            this.Controls.Add(this.trkPartitionSize);
             this.Controls.Add(this.numPartitionSize);
             this.Controls.Add(this.lblPartitionSize);
             this.Controls.Add(this.lblFlashStatus);
@@ -404,6 +418,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.maximize_normalize)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.minimize)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPartitionSize)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trkPartitionSize)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -433,6 +448,7 @@
         private System.Windows.Forms.Label lblFlashStatus;
         private System.Windows.Forms.Label lblPartitionSize;
         private System.Windows.Forms.NumericUpDown numPartitionSize;
+        private System.Windows.Forms.TrackBar trkPartitionSize;
         private System.Windows.Forms.Button btnResizePartition;
         private System.Windows.Forms.Label lblPartitionStatus;
         private System.Windows.Forms.Button btnInstallWinBTRFS;

@@ -190,6 +190,7 @@ namespace BlossomPrepTool
                     break;
                 case WizardStep.Partition:
                     wizardPartitionView.Visible = true;
+                    wizardPartitionView.BackButton.Visible = (_currentMode != WizardMode.DualBoot);
                     LoadPartitionInfo();
                     break;
                 case WizardStep.Download:
@@ -216,9 +217,11 @@ namespace BlossomPrepTool
                     break;
                 case WizardStep.Settings:
                     wizardSettingsView.Visible = true;
+                    wizardSettingsView.BackButton.Visible = (_currentMode != WizardMode.DualBoot);
                     break;
                 case WizardStep.WinBTRFS:
                     wizardWinBTRFSView.Visible = true;
+                    wizardWinBTRFSView.BackButton.Visible = (_currentMode != WizardMode.DualBoot);
                     break;
                 case WizardStep.Complete:
                     wizardCompleteView.Visible = true;

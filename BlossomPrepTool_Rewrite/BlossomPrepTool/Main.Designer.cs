@@ -68,7 +68,7 @@
             this.close.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.close.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("close.BackgroundImage")));
             this.close.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.close.Location = new System.Drawing.Point(869, 9);
+            this.close.Location = new System.Drawing.Point(1051, 9);
             this.close.Name = "close";
             this.close.Size = new System.Drawing.Size(16, 16);
             this.close.TabIndex = 0;
@@ -80,7 +80,7 @@
             this.maximize_normalize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.maximize_normalize.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("maximize_normalize.BackgroundImage")));
             this.maximize_normalize.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.maximize_normalize.Location = new System.Drawing.Point(837, 9);
+            this.maximize_normalize.Location = new System.Drawing.Point(1019, 9);
             this.maximize_normalize.Name = "maximize_normalize";
             this.maximize_normalize.Size = new System.Drawing.Size(16, 16);
             this.maximize_normalize.TabIndex = 1;
@@ -92,7 +92,7 @@
             this.minimize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.minimize.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("minimize.BackgroundImage")));
             this.minimize.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.minimize.Location = new System.Drawing.Point(806, 9);
+            this.minimize.Location = new System.Drawing.Point(988, 9);
             this.minimize.Name = "minimize";
             this.minimize.Size = new System.Drawing.Size(16, 16);
             this.minimize.TabIndex = 2;
@@ -152,7 +152,7 @@
             // btnClearLog
             // 
             this.btnClearLog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnClearLog.Location = new System.Drawing.Point(13, 580);
+            this.btnClearLog.Location = new System.Drawing.Point(13, 617);
             this.btnClearLog.Name = "btnClearLog";
             this.btnClearLog.Size = new System.Drawing.Size(80, 25);
             this.btnClearLog.TabIndex = 17;
@@ -234,7 +234,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lstLog.Location = new System.Drawing.Point(13, 240);
             this.lstLog.Name = "lstLog";
-            this.lstLog.Size = new System.Drawing.Size(874, 329);
+            this.lstLog.Size = new System.Drawing.Size(1056, 355);
             this.lstLog.TabIndex = 16;
             // 
             // lblUSBDrives
@@ -261,7 +261,7 @@
             this.wizardCompleteView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardCompleteView.Location = new System.Drawing.Point(10, 30);
             this.wizardCompleteView.Name = "wizardCompleteView";
-            this.wizardCompleteView.Size = new System.Drawing.Size(879, 580);
+            this.wizardCompleteView.Size = new System.Drawing.Size(1061, 617);
             this.wizardCompleteView.TabIndex = 104;
             this.wizardCompleteView.Visible = false;
             // 
@@ -271,7 +271,7 @@
             this.wizardWinBTRFSView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardWinBTRFSView.Location = new System.Drawing.Point(10, 30);
             this.wizardWinBTRFSView.Name = "wizardWinBTRFSView";
-            this.wizardWinBTRFSView.Size = new System.Drawing.Size(879, 580);
+            this.wizardWinBTRFSView.Size = new System.Drawing.Size(1061, 617);
             this.wizardWinBTRFSView.TabIndex = 107;
             this.wizardWinBTRFSView.Visible = false;
             // 
@@ -281,7 +281,7 @@
             this.wizardSettingsView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardSettingsView.Location = new System.Drawing.Point(10, 30);
             this.wizardSettingsView.Name = "wizardSettingsView";
-            this.wizardSettingsView.Size = new System.Drawing.Size(879, 580);
+            this.wizardSettingsView.Size = new System.Drawing.Size(1061, 617);
             this.wizardSettingsView.TabIndex = 106;
             this.wizardSettingsView.Visible = false;
             // 
@@ -291,7 +291,7 @@
             this.wizardPartitionView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardPartitionView.Location = new System.Drawing.Point(10, 30);
             this.wizardPartitionView.Name = "wizardPartitionView";
-            this.wizardPartitionView.Size = new System.Drawing.Size(879, 580);
+            this.wizardPartitionView.Size = new System.Drawing.Size(1061, 617);
             this.wizardPartitionView.TabIndex = 105;
             this.wizardPartitionView.Visible = false;
             // 
@@ -301,7 +301,7 @@
             this.wizardFlashView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardFlashView.Location = new System.Drawing.Point(10, 30);
             this.wizardFlashView.Name = "wizardFlashView";
-            this.wizardFlashView.Size = new System.Drawing.Size(879, 580);
+            this.wizardFlashView.Size = new System.Drawing.Size(1061, 617);
             this.wizardFlashView.TabIndex = 103;
             this.wizardFlashView.Visible = false;
             // 
@@ -311,7 +311,7 @@
             this.wizardDownloadView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardDownloadView.Location = new System.Drawing.Point(10, 30);
             this.wizardDownloadView.Name = "wizardDownloadView";
-            this.wizardDownloadView.Size = new System.Drawing.Size(879, 580);
+            this.wizardDownloadView.Size = new System.Drawing.Size(1061, 617);
             this.wizardDownloadView.TabIndex = 102;
             this.wizardDownloadView.Visible = false;
             // 
@@ -321,7 +321,7 @@
             this.wizardIsoSourceView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardIsoSourceView.Location = new System.Drawing.Point(10, 30);
             this.wizardIsoSourceView.Name = "wizardIsoSourceView";
-            this.wizardIsoSourceView.Size = new System.Drawing.Size(879, 580);
+            this.wizardIsoSourceView.Size = new System.Drawing.Size(1061, 617);
             this.wizardIsoSourceView.TabIndex = 105;
             this.wizardIsoSourceView.Visible = false;
             // 
@@ -331,7 +331,7 @@
             this.wizardUsbSelectionView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardUsbSelectionView.Location = new System.Drawing.Point(10, 30);
             this.wizardUsbSelectionView.Name = "wizardUsbSelectionView";
-            this.wizardUsbSelectionView.Size = new System.Drawing.Size(879, 580);
+            this.wizardUsbSelectionView.Size = new System.Drawing.Size(1061, 617);
             this.wizardUsbSelectionView.TabIndex = 101;
             this.wizardUsbSelectionView.Visible = false;
             // 
@@ -341,7 +341,7 @@
             this.wizardModeSelectionView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardModeSelectionView.Location = new System.Drawing.Point(10, 30);
             this.wizardModeSelectionView.Name = "wizardModeSelectionView";
-            this.wizardModeSelectionView.Size = new System.Drawing.Size(879, 580);
+            this.wizardModeSelectionView.Size = new System.Drawing.Size(1061, 617);
             this.wizardModeSelectionView.TabIndex = 100;
             this.wizardModeSelectionView.Visible = false;
             // 
@@ -351,7 +351,7 @@
             this.wizardWelcomeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.wizardWelcomeView.Location = new System.Drawing.Point(10, 30);
             this.wizardWelcomeView.Name = "wizardWelcomeView";
-            this.wizardWelcomeView.Size = new System.Drawing.Size(879, 580);
+            this.wizardWelcomeView.Size = new System.Drawing.Size(1061, 617);
             this.wizardWelcomeView.TabIndex = 100;
             this.wizardWelcomeView.Visible = false;
             // 
@@ -360,7 +360,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(33)))), ((int)(((byte)(38)))));
-            this.ClientSize = new System.Drawing.Size(899, 620);
+            this.ClientSize = new System.Drawing.Size(1081, 657);
             this.Controls.Add(this.btnClearLog);
             this.Controls.Add(this.lstLog);
             this.Controls.Add(this.lblWinBTRFSStatus);

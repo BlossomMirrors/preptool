@@ -16,6 +16,7 @@ namespace BlossomPrepTool
         private bool _isDownloadPaused;
         private string _selectedISOPath;
         private bool _isRestoreMode;
+        private bool _isFlashing;
 
         private void HideAllDesignerControls()
         {
@@ -24,7 +25,7 @@ namespace BlossomPrepTool
             {
                 if (ctrl == close || ctrl == maximize_normalize || ctrl == minimize ||
                     ctrl == wizardModeSelectionView || ctrl == wizardUsbSelectionView ||
-                    ctrl == wizardIsoSourceView || ctrl == wizardDownloadView || 
+                    ctrl == wizardIsoSourceView || ctrl == wizardDownloadView ||
                     ctrl == wizardFlashView || ctrl == wizardCompleteView)
                 {
                     continue;
@@ -101,20 +102,16 @@ namespace BlossomPrepTool
             wizardDownloadView.CancelClicked += (s, e) => CancelDownload();
             wizardDownloadView.BackClicked += (s, e) => GoToStep(WizardStep.USBSelection);
             wizardFlashView.StartClicked += (s, e) => ExecuteFlashUSB();
-            wizardFlashView.BackClicked += (s, e) => 
+            wizardFlashView.BackClicked += (s, e) =>
             {
-                // If in restore mode, go back to ISO source (manual page)
-                // Otherwise go back to Download
-                if (_isRestoreMode)
-                {
-                    GoToStep(WizardStep.ISOSource);
-                }
-                else
-                {
-                    GoToStep(WizardStep.Download);
-                }
+                GoToStep(WizardStep.Welcome);
+                _isRestoreMode = false;
             };
-            wizardCompleteView.FinishClicked += (s, e) => this.Close();
+            wizardCompleteView.FinishClicked += (s, e) =>
+            {
+                GoToStep(WizardStep.Welcome);
+                _isRestoreMode = false;
+            };
 
             wizardUsbSelectionView.NextButton.Enabled = false;
             wizardUsbSelectionView.RefreshButton.PerformClick();
@@ -206,7 +203,7 @@ namespace BlossomPrepTool
                 this.Invoke(new Action(() =>
                 {
                     wizardDownloadView.ProgressBar.Value = e.ProgressPercentage;
-                    wizardDownloadView.StatusLabel.Text = 
+                    wizardDownloadView.StatusLabel.Text =
                         $"{_spinnerFrames[_spinnerFrame]} Downloading: {e.BytesDownloaded / (1024.0 * 1024.0):F2}MB / {e.TotalBytes / (1024.0 * 1024.0):F2}MB ({e.ProgressPercentage}%)";
                 }));
             };
@@ -351,7 +348,7 @@ namespace BlossomPrepTool
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     _selectedISOPath = openFileDialog.FileName;
-                    
+
                     // Verify it's a valid file
                     var fileInfo = new System.IO.FileInfo(_selectedISOPath);
                     if (fileInfo.Length < 1024 * 1024 * 100) // Less than 100MB is suspicious
@@ -361,16 +358,16 @@ namespace BlossomPrepTool
                             "Confirm ISO File",
                             MessageBoxButtons.YesNo,
                             MessageBoxIcon.Warning);
-                        
+
                         if (result == DialogResult.No)
                         {
                             _selectedISOPath = null;
                             return;
                         }
                     }
-                    
+
                     LogMessage($"User selected ISO: {_selectedISOPath}");
-                    
+
                     // Skip directly to flash step
                     GoToStep(WizardStep.Flash);
                 }
@@ -404,7 +401,10 @@ namespace BlossomPrepTool
             // Use flash view to show restore progress
             _isRestoreMode = true;
             GoToStep(WizardStep.Flash);
-            
+
+            // Disable UI during restore
+            this.ControlBox = false;
+
             wizardFlashView.StatusLabel.Text = "⠋ Restoring USB drive...";
             wizardFlashView.StatusLabel.ForeColor = WarningColor;
             StartSpinner(wizardFlashView.StatusLabel);
@@ -421,9 +421,10 @@ namespace BlossomPrepTool
                         wizardFlashView.StatusLabel.Text = "✓ USB drive restored successfully!";
                         wizardFlashView.StatusLabel.ForeColor = SuccessColor;
                         LogMessage($"USB Disk {selectedDrive.DiskNumber}: Restored to Windows USB");
-                        
-                        // Enable back button and reset mode
+
+                        // Enable back button, re-enable form controls, and reset mode
                         wizardFlashView.BackButton.Enabled = true;
+                        this.ControlBox = true;
                         _isRestoreMode = false;
                     }
                     else
@@ -431,9 +432,10 @@ namespace BlossomPrepTool
                         wizardFlashView.StatusLabel.Text = "✗ USB restore failed";
                         wizardFlashView.StatusLabel.ForeColor = ErrorColor;
                         LogMessage("USB restore failed");
-                        
-                        // Enable back button and reset mode
+
+                        // Enable back button, re-enable form controls, and reset mode
                         wizardFlashView.BackButton.Enabled = true;
+                        this.ControlBox = true;
                         _isRestoreMode = false;
                     }
                 }));
@@ -446,9 +448,10 @@ namespace BlossomPrepTool
                     wizardFlashView.StatusLabel.Text = $"✗ Error: {ex.Message}";
                     wizardFlashView.StatusLabel.ForeColor = ErrorColor;
                     LogMessage($"USB restore error: {ex.Message}");
-                    
-                    // Enable back button and reset mode
+
+                    // Enable back button, re-enable form controls, and reset mode
                     wizardFlashView.BackButton.Enabled = true;
+                    this.ControlBox = true;
                     _isRestoreMode = false;
                 }));
             }
@@ -463,7 +466,7 @@ namespace BlossomPrepTool
             }
 
             var selectedDrive = _usbDiskMap[wizardUsbSelectionView.DriveComboBox.SelectedIndex];
-            
+
             // Use selected ISO if available, otherwise use downloaded ISO
             var isoPath = !string.IsNullOrEmpty(_selectedISOPath) ? _selectedISOPath : _preptool.GetISOPath();
 
@@ -476,6 +479,12 @@ namespace BlossomPrepTool
             if (MessageBox.Show($"This will erase all data on Disk {selectedDrive.DiskNumber}. Continue?",
                 "Confirm USB Flash", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 return;
+
+            // Disable UI during flashing
+            _isFlashing = true;
+            wizardFlashView.BackButton.Enabled = false;
+            wizardFlashView.StartButton.Enabled = false;
+            this.ControlBox = false;
 
             wizardFlashView.StatusLabel.Text = "⠋ Flashing USB...";
             wizardFlashView.StatusLabel.ForeColor = WarningColor;
@@ -491,6 +500,8 @@ namespace BlossomPrepTool
                     this.Invoke(new Action(() =>
                     {
                         StopSpinner();
+                        _isFlashing = false;
+                        this.ControlBox = true;
                         if (result)
                         {
                             wizardFlashView.StatusLabel.Text = "✓ USB flashed successfully!";
@@ -502,9 +513,11 @@ namespace BlossomPrepTool
                         {
                             wizardFlashView.StatusLabel.Text = "✗ Flash operation failed";
                             wizardFlashView.StatusLabel.ForeColor = ErrorColor;
+                            wizardFlashView.BackButton.Enabled = true;
+                            wizardFlashView.StartButton.Enabled = true;
                         }
                     }));
-                    
+
                     // Auto-advance to complete after successful flash
                     if (result)
                     {
@@ -518,6 +531,10 @@ namespace BlossomPrepTool
                 this.Invoke(new Action(() =>
                 {
                     StopSpinner();
+                    _isFlashing = false;
+                    this.ControlBox = true;
+                    wizardFlashView.BackButton.Enabled = true;
+                    wizardFlashView.StartButton.Enabled = true;
                     wizardFlashView.StatusLabel.Text = "⊘ Flash cancelled";
                     wizardFlashView.StatusLabel.ForeColor = TextSecondary;
                 }));
@@ -527,6 +544,10 @@ namespace BlossomPrepTool
                 this.Invoke(new Action(() =>
                 {
                     StopSpinner();
+                    _isFlashing = false;
+                    this.ControlBox = true;
+                    wizardFlashView.BackButton.Enabled = true;
+                    wizardFlashView.StartButton.Enabled = true;
                     wizardFlashView.StatusLabel.Text = $"✗ Error: {ex.Message}";
                     wizardFlashView.StatusLabel.ForeColor = ErrorColor;
                     LogMessage($"Flash failed: {ex.Message}");

@@ -87,6 +87,9 @@ namespace BlossomPrepTool
             ApplyDarkTheme();
             SetupButtonHoverEffects();
             InitializeWizardPages();
+            
+            // Prevent closing during critical operations
+            this.FormClosing += Main_FormClosing;
 
             // Hide all designer controls - wizard mode only
             HideAllDesignerControls();
@@ -761,6 +764,20 @@ namespace BlossomPrepTool
         private void Main_MouseUp(object sender, MouseEventArgs e)
         {
             mouseDown = false;
+        }
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Prevent closing during flashing or restore operations
+            if (_isFlashing || _isRestoreMode)
+            {
+                e.Cancel = true;
+                MessageBox.Show(
+                    "Cannot close the application while a USB operation is in progress.\n\nPlease wait for the operation to complete.",
+                    "Operation in Progress",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)

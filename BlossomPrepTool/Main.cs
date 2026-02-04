@@ -558,14 +558,19 @@ namespace BlossomPrepTool
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             e.Graphics.Clear(this.BackColor);
 
-            int radius = 12;
-            int thickness = 1;
+            const int radius = 12;
+            const int thickness = 1;
+
+            if (ClientSize.Width <= 0 || ClientSize.Height <= 0)
+            {
+                return;
+            }
 
             Rectangle rect = new Rectangle(
                 thickness,
                 thickness,
-                Width - 2 * thickness,
-                Height - 2 * thickness
+                ClientSize.Width - (2 * thickness) - 1,
+                ClientSize.Height - (2 * thickness) - 1
             );
 
             var path = GetRoundedRectPath(rect, radius);
@@ -589,8 +594,14 @@ namespace BlossomPrepTool
                 Region.Dispose();
             }
 
+            if (ClientSize.Width <= 0 || ClientSize.Height <= 0)
+            {
+                return;
+            }
+
+            const int radius = 12;
             Region = Region.FromHrgn(
-                CreateRoundRectRgn(0, 0, Width + 3, Height + 2, 20, 20)
+                CreateRoundRectRgn(0, 0, ClientSize.Width + 1, ClientSize.Height + 1, radius * 2, radius * 2)
             );
 
             this.Invalidate();

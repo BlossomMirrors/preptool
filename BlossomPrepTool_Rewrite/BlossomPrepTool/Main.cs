@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,21 +15,28 @@ namespace BlossomPrepTool
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
         private static extern IntPtr CreateRoundRectRgn
         (
-            int nLeftRect,     // x-coordinate of upper-left corner
-            int nTopRect,      // y-coordinate of upper-left corner
-            int nRightRect,    // x-coordinate of lower-right corner
-            int nBottomRect,   // y-coordinate of lower-right corner
-            int nWidthEllipse, // width of ellipse
-            int nHeightEllipse // height of ellipse
+            int nLeftRect,
+            int nTopRect,
+            int nRightRect,
+            int nBottomRect,
+            int nWidthEllipse,
+            int nHeightEllipse
         );
 
-        private const int RESIZE_HANDLE_SIZE = 10;
-        private PrepToolIntegration _preptool;
-        private Dictionary<int, USBInfo> _usbDiskMap = new Dictionary<int, USBInfo>();
+        // Dark Theme Colors
+        private readonly Color DarkBg = Color.FromArgb(20, 20, 23);
+        private readonly Color DarkPanel = Color.FromArgb(33, 33, 38);
+        private readonly Color AccentColor = Color.FromArgb(168, 85, 247);
+        private readonly Color TextColor = Color.FromArgb(229, 229, 231);
+        private readonly Color TextSecondary = Color.FromArgb(161, 161, 170);
+        private readonly Color SuccessColor = Color.FromArgb(34, 197, 94);
+        private readonly Color ErrorColor = Color.FromArgb(239, 68, 68);
+        private readonly Color WarningColor = Color.FromArgb(251, 146, 60);
 
+        // Window Control Fade States
         private class ButtonFadeState
         {
-            public Timer Timer { get; set; }
+            public System.Windows.Forms.Timer Timer { get; set; }
             public Image NormalImage { get; set; }
             public Image HoverImage { get; set; }
             public float Progress { get; set; }
@@ -39,12 +47,29 @@ namespace BlossomPrepTool
         private ButtonFadeState closeFadeState;
         private ButtonFadeState maximizeFadeState;
         private ButtonFadeState minimizeFadeState;
-        
+
         private const int FADE_DURATION_MS = 100;
         private const int FADE_TIMER_INTERVAL = 15;
+        private const int RESIZE_HANDLE_SIZE = 10;
+        
+        private PrepToolIntegration _preptool;
+        private Dictionary<int, USBInfo> _usbDiskMap = new Dictionary<int, USBInfo>();
+        private CancellationTokenSource _cancellationTokenSource;
         
         private Size previousSize;
         private Point previousLocation;
+        private bool mouseDown;
+        private Point lastLocation;
+        
+        // Wizard State
+        private enum WizardMode { None, Simple, DualBoot }
+        private WizardMode _currentMode = WizardMode.None;
+        private int _completedSteps = 0;
+
+        // Loading Spinner
+        private System.Windows.Forms.Timer _spinnerTimer;
+        private int _spinnerFrame = 0;
+        private readonly string[] _spinnerFrames = new[] { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
 
         public Main()
         {
@@ -56,39 +81,24 @@ namespace BlossomPrepTool
             this.SetStyle(ControlStyles.DoubleBuffer, true);
             this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             
+            this.BackColor = DarkBg;
+            
             Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 20, 20));
             
-            // Initialize PrepTool backend
             _preptool = new PrepToolIntegration();
             
             InitializeFadeStates();
+            ApplyDarkTheme();
             SetupButtonHoverEffects();
-
+            
             btnRefreshUSB_Click(null, null);
-        }
-        
-        private void LoadInitialData()
-        {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    // Load data in background
-                    var drives = _preptool.GetUSBDrives();
-                    var isoPath = _preptool.GetISOPath();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error during initialization: {ex.Message}");
-                }
-            });
         }
 
         private void InitializeFadeStates()
         {
             closeFadeState = new ButtonFadeState
             {
-                Timer = new Timer { Interval = FADE_TIMER_INTERVAL },
+                Timer = new System.Windows.Forms.Timer { Interval = FADE_TIMER_INTERVAL },
                 Control = close,
                 NormalImage = WindowControls.close,
                 HoverImage = WindowControls.close_hover,
@@ -98,53 +108,23 @@ namespace BlossomPrepTool
 
             maximizeFadeState = new ButtonFadeState
             {
-                Timer = new Timer { Interval = FADE_TIMER_INTERVAL },
+                Timer = new System.Windows.Forms.Timer { Interval = FADE_TIMER_INTERVAL },
                 Control = maximize_normalize,
+                NormalImage = WindowControls.maximize,
+                HoverImage = WindowControls.maximize_hover,
                 Progress = 0f
             };
             maximizeFadeState.Timer.Tick += (s, e) => FadeTimer_Tick(maximizeFadeState);
 
             minimizeFadeState = new ButtonFadeState
             {
-                Timer = new Timer { Interval = FADE_TIMER_INTERVAL },
+                Timer = new System.Windows.Forms.Timer { Interval = FADE_TIMER_INTERVAL },
                 Control = minimize,
                 NormalImage = WindowControls.minimize,
                 HoverImage = WindowControls.minimize_hover,
                 Progress = 0f
             };
             minimizeFadeState.Timer.Tick += (s, e) => FadeTimer_Tick(minimizeFadeState);
-        }
-
-        private void SetupButtonHoverEffects()
-        {
-            close.MouseEnter += (s, e) => StartFade(closeFadeState, true);
-            close.MouseLeave += (s, e) => StartFade(closeFadeState, false);
-            
-            maximize_normalize.MouseEnter += (s, e) =>
-            {
-                bool isMaximized = this.Size.Width == Screen.PrimaryScreen.WorkingArea.Width && 
-                                   this.Size.Height == Screen.PrimaryScreen.WorkingArea.Height;
-                maximizeFadeState.NormalImage = isMaximized ? WindowControls.normalize : WindowControls.maximize;
-                maximizeFadeState.HoverImage = isMaximized ? WindowControls.normalize_hover : WindowControls.maximize_hover;
-                StartFade(maximizeFadeState, true);
-            };
-            maximize_normalize.MouseLeave += (s, e) =>
-            {
-                bool isMaximized = this.Size.Width == Screen.PrimaryScreen.WorkingArea.Width && 
-                                   this.Size.Height == Screen.PrimaryScreen.WorkingArea.Height;
-                maximizeFadeState.NormalImage = isMaximized ? WindowControls.normalize : WindowControls.maximize;
-                maximizeFadeState.HoverImage = isMaximized ? WindowControls.normalize_hover : WindowControls.maximize_hover;
-                StartFade(maximizeFadeState, false);
-            };
-            
-            minimize.MouseEnter += (s, e) => StartFade(minimizeFadeState, true);
-            minimize.MouseLeave += (s, e) => StartFade(minimizeFadeState, false);
-        }
-
-        private void StartFade(ButtonFadeState state, bool toHover)
-        {
-            state.FadingToHover = toHover;
-            state.Timer.Start();
         }
 
         private void FadeTimer_Tick(ButtonFadeState state)
@@ -170,7 +150,7 @@ namespace BlossomPrepTool
                 }
             }
             
-            if (state.Control != null)
+            if (state.Control != null && state.NormalImage != null && state.HoverImage != null)
             {
                 state.Control.BackgroundImage = BlendImages(state.NormalImage, state.HoverImage, state.Progress);
             }
@@ -204,6 +184,131 @@ namespace BlossomPrepTool
             }
             
             return result;
+        }
+
+        private void StartFade(ButtonFadeState state, bool toHover)
+        {
+            state.FadingToHover = toHover;
+            state.Timer.Start();
+        }
+
+        private void ApplyDarkTheme()
+        {
+            this.ForeColor = TextColor;
+
+            foreach (Control ctrl in GetAllControls(this))
+            {
+                if (ctrl is Button btn)
+                {
+                    btn.BackColor = DarkPanel;
+                    btn.ForeColor = TextColor;
+                    btn.FlatStyle = FlatStyle.Flat;
+                    btn.FlatAppearance.BorderSize = 0;
+                    btn.FlatAppearance.MouseDownBackColor = AccentColor;
+                    btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(60, 60, 70);
+                    btn.Cursor = Cursors.Hand;
+                }
+                else if (ctrl is Label lbl)
+                {
+                    lbl.BackColor = DarkBg;
+                    lbl.ForeColor = TextColor;
+                }
+                else if (ctrl is ListBox lstBox)
+                {
+                    lstBox.BackColor = DarkPanel;
+                    lstBox.ForeColor = TextColor;
+                }
+                else if (ctrl is ComboBox combo)
+                {
+                    combo.BackColor = DarkPanel;
+                    combo.ForeColor = TextColor;
+                }
+                else if (ctrl is NumericUpDown num)
+                {
+                    num.BackColor = DarkPanel;
+                    num.ForeColor = TextColor;
+                }
+            }
+        }
+
+        private IEnumerable<Control> GetAllControls(Control container)
+        {
+            foreach (Control ctrl in container.Controls)
+            {
+                yield return ctrl;
+                foreach (Control child in GetAllControls(ctrl))
+                    yield return child;
+            }
+        }
+
+        private void SetupButtonHoverEffects()
+        {
+            close.MouseEnter += (s, e) => StartFade(closeFadeState, true);
+            close.MouseLeave += (s, e) => StartFade(closeFadeState, false);
+            
+            maximize_normalize.MouseEnter += (s, e) =>
+            {
+                bool isMaximized = this.Size.Width == Screen.PrimaryScreen.WorkingArea.Width && 
+                                   this.Size.Height == Screen.PrimaryScreen.WorkingArea.Height;
+                maximizeFadeState.NormalImage = isMaximized ? WindowControls.normalize : WindowControls.maximize;
+                maximizeFadeState.HoverImage = isMaximized ? WindowControls.normalize_hover : WindowControls.maximize_hover;
+                StartFade(maximizeFadeState, true);
+            };
+            maximize_normalize.MouseLeave += (s, e) =>
+            {
+                bool isMaximized = this.Size.Width == Screen.PrimaryScreen.WorkingArea.Width && 
+                                   this.Size.Height == Screen.PrimaryScreen.WorkingArea.Height;
+                maximizeFadeState.NormalImage = isMaximized ? WindowControls.normalize : WindowControls.maximize;
+                maximizeFadeState.HoverImage = isMaximized ? WindowControls.normalize_hover : WindowControls.maximize_hover;
+                StartFade(maximizeFadeState, false);
+            };
+            
+            minimize.MouseEnter += (s, e) => StartFade(minimizeFadeState, true);
+            minimize.MouseLeave += (s, e) => StartFade(minimizeFadeState, false);
+
+            // Regular button hover for other buttons
+            foreach (Control ctrl in GetAllControls(this))
+            {
+                if (ctrl is Button btn && btn != btnDownloadISO && btn != btnFlashUSB && 
+                    btn != btnResizePartition && btn != btnInstallWinBTRFS)
+                {
+                    btn.MouseEnter += (s, e) => btn.BackColor = Color.FromArgb(60, 60, 70);
+                    btn.MouseLeave += (s, e) => btn.BackColor = DarkPanel;
+                }
+            }
+        }
+
+        private void StartSpinner(Label statusLabel)
+        {
+            if (_spinnerTimer == null)
+            {
+                _spinnerTimer = new System.Windows.Forms.Timer { Interval = 80 };
+                _spinnerTimer.Tick += (s, e) =>
+                {
+                    if (statusLabel != null && !statusLabel.IsDisposed)
+                    {
+                        this.Invoke(new Action(() =>
+                        {
+                            _spinnerFrame = (_spinnerFrame + 1) % _spinnerFrames.Length;
+                            statusLabel.Text = _spinnerFrames[_spinnerFrame] + " Processing...";
+                        }));
+                    }
+                    else
+                    {
+                        _spinnerTimer.Stop();
+                    }
+                };
+            }
+            _spinnerFrame = 0;
+            _spinnerTimer.Start();
+        }
+
+        private void StopSpinner()
+        {
+            if (_spinnerTimer != null)
+            {
+                _spinnerTimer.Stop();
+            }
         }
 
         protected override void WndProc(ref Message m)
@@ -347,22 +452,49 @@ namespace BlossomPrepTool
         private async void btnDownloadISO_Click(object sender, EventArgs e)
         {
             btnDownloadISO.Enabled = false;
-            lblISOStatus.Text = "Starting download...";
+            lblISOStatus.Text = "⠋ Downloading ISO...";
+            lblISOStatus.ForeColor = WarningColor;
+            StartSpinner(lblISOStatus);
+
+            _cancellationTokenSource = new CancellationTokenSource();
 
             try
             {
-                var isoPath = await _preptool.DownloadISO();
-                lblISOStatus.Text = "Download completed";
-                LogMessage($"ISO downloaded to: {isoPath}");
+                await Task.Run(async () =>
+                {
+                    var isoPath = await _preptool.DownloadISO();
+                    this.Invoke(new Action(() =>
+                    {
+                        StopSpinner();
+                        lblISOStatus.Text = "✓ ISO downloaded successfully!";
+                        lblISOStatus.ForeColor = SuccessColor;
+                        _completedSteps++;
+                        LogMessage($"ISO: {isoPath}");
+                    }));
+                }, _cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    lblISOStatus.Text = "⊘ Download cancelled";
+                    lblISOStatus.ForeColor = TextSecondary;
+                }));
             }
             catch (Exception ex)
             {
-                lblISOStatus.Text = $"Error: {ex.Message}";
-                LogMessage($"Download failed: {ex.Message}");
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    lblISOStatus.Text = $"✗ Error: {ex.Message}";
+                    lblISOStatus.ForeColor = ErrorColor;
+                    LogMessage($"Download failed: {ex.Message}");
+                }));
             }
             finally
             {
-                btnDownloadISO.Enabled = true;
+                this.Invoke(new Action(() => btnDownloadISO.Enabled = true));
             }
         }
 
@@ -412,40 +544,57 @@ namespace BlossomPrepTool
                 return;
 
             btnFlashUSB.Enabled = false;
-            lblFlashStatus.Text = "Flashing...";
+            lblFlashStatus.Text = "⠋ Flashing USB...";
+            lblFlashStatus.ForeColor = WarningColor;
+            StartSpinner(lblFlashStatus);
+
+            _cancellationTokenSource = new CancellationTokenSource();
 
             try
             {
-                var result = await _preptool.FlashUSB(selectedDrive.DiskNumber, isoPath);
-                if (result)
-                    lblFlashStatus.Text = "Flash completed successfully!";
-                else
-                    lblFlashStatus.Text = "Flash failed";
+                await Task.Run(async () =>
+                {
+                    var result = await _preptool.FlashUSB(selectedDrive.DiskNumber, isoPath);
+                    this.Invoke(new Action(() =>
+                    {
+                        StopSpinner();
+                        if (result)
+                        {
+                            lblFlashStatus.Text = "✓ USB flashed successfully!";
+                            lblFlashStatus.ForeColor = SuccessColor;
+                            _completedSteps++;
+                            LogMessage($"USB Disk {selectedDrive.DiskNumber}: Flash complete");
+                        }
+                        else
+                        {
+                            lblFlashStatus.Text = "✗ Flash operation failed";
+                            lblFlashStatus.ForeColor = ErrorColor;
+                        }
+                    }));
+                }, _cancellationTokenSource.Token);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException)
             {
-                lblFlashStatus.Text = $"Flash error: {ex.Message}";
-                LogMessage($"Flash failed: {ex.Message}");
-            }
-            finally
-            {
-                btnFlashUSB.Enabled = true;
-            }
-        }
-
-        private async Task RefreshDriveInfo()
-        {
-            try
-            {
-                var driveInfo = await _preptool.GetCDriveSizeInfo();
                 this.Invoke(new Action(() =>
                 {
-                    LogMessage($"C: Drive - Total: {driveInfo.TotalSizeGB}GB, Free: {driveInfo.FreeSpaceGB}GB, Used: {driveInfo.UsedSpaceGB}GB");
+                    StopSpinner();
+                    lblFlashStatus.Text = "⊘ Flash cancelled";
+                    lblFlashStatus.ForeColor = TextSecondary;
                 }));
             }
             catch (Exception ex)
             {
-                LogMessage($"Error getting drive info: {ex.Message}");
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    lblFlashStatus.Text = $"✗ Error: {ex.Message}";
+                    lblFlashStatus.ForeColor = ErrorColor;
+                    LogMessage($"Flash failed: {ex.Message}");
+                }));
+            }
+            finally
+            {
+                this.Invoke(new Action(() => btnFlashUSB.Enabled = true));
             }
         }
 
@@ -454,60 +603,123 @@ namespace BlossomPrepTool
             var targetSize = (double)numPartitionSize.Value;
 
             if (MessageBox.Show(
-                $"This will resize your C: partition to create {targetSize}GB of free space.\\nThis operation requires a restart and should not be interrupted!\\n\\nContinue?",
+                $"This will resize your C: partition to create {targetSize}GB of free space.\nThis operation requires a restart and should not be interrupted!\n\nContinue?",
                 "Confirm Partition Resize", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 return;
 
             btnResizePartition.Enabled = false;
-            lblPartitionStatus.Text = "Resizing...";
+            lblPartitionStatus.Text = "⠋ Resizing partition...";
+            lblPartitionStatus.ForeColor = WarningColor;
+            StartSpinner(lblPartitionStatus);
+
+            _cancellationTokenSource = new CancellationTokenSource();
 
             try
             {
-                var result = await _preptool.ResizePartition((int)targetSize);
-                if (result)
+                await Task.Run(async () =>
                 {
-                    lblPartitionStatus.Text = "Partition resized successfully! A restart may be required.";
-                    await RefreshDriveInfo();
-                }
-                else
-                    lblPartitionStatus.Text = "Partition resize failed";
+                    var result = await _preptool.ResizePartition((int)targetSize);
+                    this.Invoke(new Action(() =>
+                    {
+                        StopSpinner();
+                        if (result)
+                        {
+                            lblPartitionStatus.Text = "✓ Partition resized! Restart required.";
+                            lblPartitionStatus.ForeColor = SuccessColor;
+                            _completedSteps++;
+                            LogMessage($"Partition resized to {targetSize}GB free space");
+                        }
+                        else
+                        {
+                            lblPartitionStatus.Text = "✗ Partition resize failed";
+                            lblPartitionStatus.ForeColor = ErrorColor;
+                        }
+                    }));
+                }, _cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    lblPartitionStatus.Text = "⊘ Resize cancelled";
+                    lblPartitionStatus.ForeColor = TextSecondary;
+                }));
             }
             catch (Exception ex)
             {
-                lblPartitionStatus.ForeColor = Color.FromArgb(239, 68, 68);
-                lblPartitionStatus.Text = $"Error: {ex.Message}";
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    lblPartitionStatus.Text = $"✗ Error: {ex.Message}";
+                    lblPartitionStatus.ForeColor = ErrorColor;
+                    LogMessage($"Partition resize failed: {ex.Message}");
+                }));
             }
             finally
             {
-                btnResizePartition.Enabled = true;
+                this.Invoke(new Action(() => btnResizePartition.Enabled = true));
             }
         }
 
         private async void btnInstallWinBTRFS_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("This will install winbtrfs via Chocolatey.\\nContinue?",
+            if (MessageBox.Show("This will install winbtrfs via Chocolatey.\nContinue?",
                 "Confirm Installation", MessageBoxButtons.YesNo, MessageBoxIcon.Information) != DialogResult.Yes)
                 return;
 
             btnInstallWinBTRFS.Enabled = false;
-            lblWinBTRFSStatus.Text = "Installing...";
+            lblWinBTRFSStatus.Text = "⠋ Installing winbtrfs...";
+            lblWinBTRFSStatus.ForeColor = WarningColor;
+            StartSpinner(lblWinBTRFSStatus);
+
+            _cancellationTokenSource = new CancellationTokenSource();
 
             try
             {
-                var result = await _preptool.InstallWinBTRFS();
-                if (result)
-                    lblWinBTRFSStatus.Text = "winbtrfs installed successfully!";
-                else
-                    lblWinBTRFSStatus.Text = "Installation failed";
+                await Task.Run(async () =>
+                {
+                    var result = await _preptool.InstallWinBTRFS();
+                    this.Invoke(new Action(() =>
+                    {
+                        StopSpinner();
+                        if (result)
+                        {
+                            lblWinBTRFSStatus.Text = "✓ winbtrfs installed!";
+                            lblWinBTRFSStatus.ForeColor = SuccessColor;
+                            _completedSteps++;
+                            LogMessage("winbtrfs installation completed");
+                        }
+                        else
+                        {
+                            lblWinBTRFSStatus.Text = "✗ Installation failed";
+                            lblWinBTRFSStatus.ForeColor = ErrorColor;
+                        }
+                    }));
+                }, _cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    lblWinBTRFSStatus.Text = "⊘ Installation cancelled";
+                    lblWinBTRFSStatus.ForeColor = TextSecondary;
+                }));
             }
             catch (Exception ex)
             {
-                lblWinBTRFSStatus.ForeColor = Color.FromArgb(239, 68, 68);
-                lblWinBTRFSStatus.Text = $"Error: {ex.Message}";
+                this.Invoke(new Action(() =>
+                {
+                    StopSpinner();
+                    lblWinBTRFSStatus.Text = $"✗ Error: {ex.Message}";
+                    lblWinBTRFSStatus.ForeColor = ErrorColor;
+                    LogMessage($"Installation failed: {ex.Message}");
+                }));
             }
             finally
             {
-                btnInstallWinBTRFS.Enabled = true;
+                this.Invoke(new Action(() => btnInstallWinBTRFS.Enabled = true));
             }
         }
 
@@ -527,9 +739,6 @@ namespace BlossomPrepTool
             lstLog.Items.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
             lstLog.TopIndex = Math.Max(0, lstLog.Items.Count - 1);
         }
-
-        private bool mouseDown;
-        private Point lastLocation;
 
         private void Main_MouseDown(object sender, MouseEventArgs e)
         {

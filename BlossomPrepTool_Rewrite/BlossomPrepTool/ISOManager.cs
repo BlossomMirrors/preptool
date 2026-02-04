@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.Text.Json;
 
 namespace BlossomPrepTool
 {
@@ -14,19 +15,26 @@ namespace BlossomPrepTool
         public int ProgressPercentage => TotalBytes > 0 ? (int)((BytesDownloaded * 100) / TotalBytes) : 0;
     }
 
+    public class ISOMetadata
+    {
+        public string name { get; set; }
+        public string sha256 { get; set; }
+    }
+
     /// <summary>
     /// Manages ISO download, caching, and SHA256 verification
     /// </summary>
     public class ISOManager
     {
-        private const string ISOUrl = "https://cdn.blossomos.org/iso/BlossomOS-2026.01.16-x86_64.iso";
-        private const string SHA256Url = ISOUrl + ".sha256";
+        private const string MetadataUrl = "https://cdn.blossomos.org/iso/isodata.json";
+        private const string BaseUrl = "https://cdn.blossomos.org/iso/";
         private const string CacheDirName = "BlossomOS";
 
         private string _cacheDirectory;
         private CancellationTokenSource _cancellationTokenSource;
         private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true);
         private volatile bool _isPaused;
+        private ISOMetadata _metadata;
 
         public event EventHandler<ISODownloadProgressEventArgs> DownloadProgress;
         public event EventHandler<EventArgs> DownloadCompleted;
@@ -56,19 +64,39 @@ namespace BlossomPrepTool
 
             try
             {
-                // Verify SHA256
-                var expectedSha256 = await GetExpectedSHA256();
-                if (string.IsNullOrEmpty(expectedSha256))
+                // Fetch metadata first
+                await FetchMetadata();
+                if (_metadata == null || string.IsNullOrEmpty(_metadata.sha256))
                     return false;
 
                 var actualSha256 = await ComputeFileSHA256(isoPath);
-                return actualSha256.Equals(expectedSha256, StringComparison.OrdinalIgnoreCase);
+                return actualSha256.Equals(_metadata.sha256, StringComparison.OrdinalIgnoreCase);
             }
             catch
             {
                 // If verification fails, delete the file
                 try { File.Delete(isoPath); } catch { }
                 return false;
+            }
+        }
+
+        private async Task FetchMetadata()
+        {
+            if (_metadata != null)
+                return;
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var json = await client.GetStringAsync(MetadataUrl);
+                    _metadata = JsonSerializer.Deserialize<ISOMetadata>(json);
+                }
+            }
+            catch
+            {
+                _metadata = null;
+                throw;
             }
         }
 
@@ -79,6 +107,13 @@ namespace BlossomPrepTool
 
             try
             {
+                // Fetch metadata first
+                await FetchMetadata();
+                if (_metadata == null || string.IsNullOrEmpty(_metadata.name))
+                    throw new Exception("Failed to fetch ISO metadata");
+
+                var isoUrl = BaseUrl + _metadata.name;
+
                 // Ensure cache directory exists
                 Directory.CreateDirectory(_cacheDirectory);
 
@@ -87,7 +122,7 @@ namespace BlossomPrepTool
                     File.Delete(isoPath);
 
                 using (var httpClient = new HttpClient())
-                using (var response = await httpClient.GetAsync(ISOUrl, HttpCompletionOption.ResponseHeadersRead, _cancellationTokenSource.Token))
+                using (var response = await httpClient.GetAsync(isoUrl, HttpCompletionOption.ResponseHeadersRead, _cancellationTokenSource.Token))
                 {
                     response.EnsureSuccessStatusCode();
                     var totalBytes = response.Content.Headers.ContentLength ?? 0;
@@ -167,23 +202,6 @@ namespace BlossomPrepTool
         }
 
         public bool IsPaused => _isPaused;
-
-        private async Task<string> GetExpectedSHA256()
-        {
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    var content = await client.GetStringAsync(SHA256Url);
-                    var parts = content.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-                    return parts.Length > 0 ? parts[0] : null;
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
 
         private async Task<string> ComputeFileSHA256(string filePath)
         {

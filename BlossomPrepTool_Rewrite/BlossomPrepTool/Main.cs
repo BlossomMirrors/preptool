@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace BlossomPrepTool
@@ -21,6 +23,8 @@ namespace BlossomPrepTool
         );
 
         private const int RESIZE_HANDLE_SIZE = 10;
+        private PrepToolIntegration _preptool;
+        private Dictionary<int, USBInfo> _usbDiskMap = new Dictionary<int, USBInfo>();
 
         private class ButtonFadeState
         {
@@ -54,8 +58,28 @@ namespace BlossomPrepTool
             
             Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 20, 20));
             
+            // Initialize PrepTool backend
+            _preptool = new PrepToolIntegration();
+            
             InitializeFadeStates();
             SetupButtonHoverEffects();
+        }
+        
+        private void LoadInitialData()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    // Load data in background
+                    var drives = _preptool.GetUSBDrives();
+                    var isoPath = _preptool.GetISOPath();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error during initialization: {ex.Message}");
+                }
+            });
         }
 
         private void InitializeFadeStates()
@@ -314,6 +338,192 @@ namespace BlossomPrepTool
             );
             
             this.Invalidate();
+        }
+
+        // ==================== UI Event Handlers ====================
+
+        private async void btnDownloadISO_Click(object sender, EventArgs e)
+        {
+            btnDownloadISO.Enabled = false;
+            lblISOStatus.Text = "Starting download...";
+
+            try
+            {
+                var isoPath = await _preptool.DownloadISO();
+                lblISOStatus.Text = "Download completed";
+                LogMessage($"ISO downloaded to: {isoPath}");
+            }
+            catch (Exception ex)
+            {
+                lblISOStatus.Text = $"Error: {ex.Message}";
+                LogMessage($"Download failed: {ex.Message}");
+            }
+            finally
+            {
+                btnDownloadISO.Enabled = true;
+            }
+        }
+
+        private async Task RefreshUSBDrives()
+        {
+            var drives = _preptool.GetUSBDrives();
+            _usbDiskMap.Clear();
+            cmbUSBDrives.Items.Clear();
+
+            foreach (var drive in drives)
+            {
+                _usbDiskMap[cmbUSBDrives.Items.Count] = drive;
+                cmbUSBDrives.Items.Add($"Disk {drive.DiskNumber}: {drive.DisplayName} ({drive.SizeGB}GB)");
+            }
+
+            if (cmbUSBDrives.Items.Count > 0)
+                cmbUSBDrives.SelectedIndex = 0;
+        }
+
+        private async void btnRefreshUSB_Click(object sender, EventArgs e)
+        {
+            btnRefreshUSB.Enabled = false;
+            await RefreshUSBDrives();
+            btnRefreshUSB.Enabled = true;
+            LogMessage("USB drives refreshed");
+        }
+
+        private async void btnFlashUSB_Click(object sender, EventArgs e)
+        {
+            if (cmbUSBDrives.SelectedIndex < 0)
+            {
+                MessageBox.Show("Please select a USB drive", "No Drive Selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var selectedDrive = _usbDiskMap[cmbUSBDrives.SelectedIndex];
+            var isoPath = _preptool.GetISOPath();
+
+            if (!System.IO.File.Exists(isoPath))
+            {
+                MessageBox.Show("ISO file not found. Please download it first.", "ISO Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (MessageBox.Show($"This will erase all data on Disk {selectedDrive.DiskNumber}. Continue?",
+                "Confirm USB Flash", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                return;
+
+            btnFlashUSB.Enabled = false;
+            lblFlashStatus.Text = "Flashing...";
+
+            try
+            {
+                var result = await _preptool.FlashUSB(selectedDrive.DiskNumber, isoPath);
+                if (result)
+                    lblFlashStatus.Text = "Flash completed successfully!";
+                else
+                    lblFlashStatus.Text = "Flash failed";
+            }
+            catch (Exception ex)
+            {
+                lblFlashStatus.Text = $"Flash error: {ex.Message}";
+                LogMessage($"Flash failed: {ex.Message}");
+            }
+            finally
+            {
+                btnFlashUSB.Enabled = true;
+            }
+        }
+
+        private async Task RefreshDriveInfo()
+        {
+            try
+            {
+                var driveInfo = await _preptool.GetCDriveSizeInfo();
+                this.Invoke(new Action(() =>
+                {
+                    LogMessage($"C: Drive - Total: {driveInfo.TotalSizeGB}GB, Free: {driveInfo.FreeSpaceGB}GB, Used: {driveInfo.UsedSpaceGB}GB");
+                }));
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"Error getting drive info: {ex.Message}");
+            }
+        }
+
+        private async void btnResizePartition_Click(object sender, EventArgs e)
+        {
+            var targetSize = (double)numPartitionSize.Value;
+
+            if (MessageBox.Show(
+                $"This will resize your C: partition to create {targetSize}GB of free space.\\nThis operation requires a restart and should not be interrupted!\\n\\nContinue?",
+                "Confirm Partition Resize", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                return;
+
+            btnResizePartition.Enabled = false;
+            lblPartitionStatus.Text = "Resizing...";
+
+            try
+            {
+                var result = await _preptool.ResizePartition((int)targetSize);
+                if (result)
+                {
+                    lblPartitionStatus.Text = "Partition resized successfully! A restart may be required.";
+                    await RefreshDriveInfo();
+                }
+                else
+                    lblPartitionStatus.Text = "Partition resize failed";
+            }
+            catch (Exception ex)
+            {
+                lblPartitionStatus.ForeColor = Color.FromArgb(239, 68, 68);
+                lblPartitionStatus.Text = $"Error: {ex.Message}";
+            }
+            finally
+            {
+                btnResizePartition.Enabled = true;
+            }
+        }
+
+        private async void btnInstallWinBTRFS_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("This will install winbtrfs via Chocolatey.\\nContinue?",
+                "Confirm Installation", MessageBoxButtons.YesNo, MessageBoxIcon.Information) != DialogResult.Yes)
+                return;
+
+            btnInstallWinBTRFS.Enabled = false;
+            lblWinBTRFSStatus.Text = "Installing...";
+
+            try
+            {
+                var result = await _preptool.InstallWinBTRFS();
+                if (result)
+                    lblWinBTRFSStatus.Text = "winbtrfs installed successfully!";
+                else
+                    lblWinBTRFSStatus.Text = "Installation failed";
+            }
+            catch (Exception ex)
+            {
+                lblWinBTRFSStatus.ForeColor = Color.FromArgb(239, 68, 68);
+                lblWinBTRFSStatus.Text = $"Error: {ex.Message}";
+            }
+            finally
+            {
+                btnInstallWinBTRFS.Enabled = true;
+            }
+        }
+
+        private void btnClearLog_Click(object sender, EventArgs e)
+        {
+            lstLog.Items.Clear();
+        }
+
+        private void LogMessage(string message)
+        {
+            if (lstLog.InvokeRequired)
+            {
+                lstLog.Invoke(new Action(() => LogMessage(message)));
+                return;
+            }
+
+            lstLog.Items.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
+            lstLog.TopIndex = Math.Max(0, lstLog.Items.Count - 1);
         }
 
         private bool mouseDown;

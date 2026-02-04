@@ -42,6 +42,9 @@ namespace BlossomPrepTool
             // Round buttons
             btnFinish.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnFinish.Width, btnFinish.Height, 8, 8));
             btnReboot.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnReboot.Width, btnReboot.Height, 8, 8));
+
+            // Round QR image
+            picQR.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, picQR.Width, picQR.Height, 10, 10));
         }
 
         private void FixLabelTransparency()

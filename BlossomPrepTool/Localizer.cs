@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Resources;
 
 namespace BlossomPrepTool
 {
@@ -12,7 +11,14 @@ namespace BlossomPrepTool
     public static class Localizer
     {
         private static CultureInfo _currentCulture;
-        private static ResourceManager _resourceManager;
+        private static readonly Dictionary<string, IReadOnlyDictionary<string, string>> FallbackLocales =
+            new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["en-US"] = Locale_en_US.Strings,
+                ["en"] = Locale_en_US.Strings,
+                ["de-DE"] = Locale_de_DE.Strings,
+                ["de"] = Locale_de_DE.Strings
+            };
 
         // Available cultures
         public static readonly CultureInfo EnglishUS = new CultureInfo("en-US");
@@ -26,7 +32,6 @@ namespace BlossomPrepTool
 
         static Localizer()
         {
-            _resourceManager = new ResourceManager("BlossomPrepTool.Strings", typeof(Localizer).Assembly);
             _currentCulture = CultureInfo.CurrentUICulture;
 
             // Fall back to English if current culture is not supported
@@ -41,10 +46,6 @@ namespace BlossomPrepTool
                     _currentCulture = EnglishUS;
                 }
             }
-        }
-
-        private static void InitializeStringDictionaries()
-        {
         }
 
         /// <summary>
@@ -68,13 +69,11 @@ namespace BlossomPrepTool
         /// </summary>
         public static string GetString(string key)
         {
-            try
+            var fallback = GetFallbackString(key);
+            if (!string.IsNullOrEmpty(fallback))
             {
-                var value = _resourceManager?.GetString(key, _currentCulture);
-                if (value != null)
-                    return value;
+                return fallback;
             }
-            catch { }
 
             return $"[{key}]";
         }
@@ -86,11 +85,10 @@ namespace BlossomPrepTool
         {
             string template = null;
 
-            try
+            if (string.IsNullOrEmpty(template))
             {
-                template = _resourceManager?.GetString(key, _currentCulture);
+                template = GetFallbackString(key);
             }
-            catch { }
 
             if (!string.IsNullOrEmpty(template))
             {
@@ -105,6 +103,33 @@ namespace BlossomPrepTool
             }
 
             return $"[{key}]";
+        }
+
+        private static string GetFallbackString(string key)
+        {
+            if (_currentCulture != null)
+            {
+                if (FallbackLocales.TryGetValue(_currentCulture.Name, out var exact) &&
+                    exact.TryGetValue(key, out var exactValue))
+                {
+                    return exactValue;
+                }
+
+                var neutral = _currentCulture.TwoLetterISOLanguageName;
+                if (FallbackLocales.TryGetValue(neutral, out var neutralMap) &&
+                    neutralMap.TryGetValue(key, out var neutralValue))
+                {
+                    return neutralValue;
+                }
+            }
+
+            if (FallbackLocales.TryGetValue(EnglishUS.Name, out var fallback) &&
+                fallback.TryGetValue(key, out var fallbackValue))
+            {
+                return fallbackValue;
+            }
+
+            return null;
         }
 
         /// <summary>

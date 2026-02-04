@@ -118,6 +118,8 @@
     <Compile Include="MainHelpers.cs" />
     <Compile Include="WizardDesignSystem.cs" />
     <Compile Include="Localizer.cs" />
+    <Compile Include="Locale_en_US.cs" />
+    <Compile Include="Locale_de_DE.cs" />
     <Compile Include="LanguageSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>

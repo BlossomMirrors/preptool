@@ -131,8 +131,7 @@ namespace BlossomPrepTool
             
             wizardCompleteView.FinishClicked += (s, e) =>
             {
-                GoToStep(WizardStep.Welcome);
-                _isRestoreMode = false;
+                Application.Exit();
             };
             wizardCompleteView.RebootClicked += (s, e) =>
             {

@@ -26,6 +26,8 @@ namespace BlossomPrepTool
         // Dark Theme Colors
         private readonly Color DarkBg = Color.FromArgb(20, 20, 23);
         private readonly Color DarkPanel = Color.FromArgb(33, 33, 38);
+        private readonly Color CardBg = Color.FromArgb(35, 35, 40);
+        private readonly Color CardBorder = Color.FromArgb(50, 50, 55);
         private readonly Color AccentColor = Color.FromArgb(92, 100, 255);
         private readonly Color TextColor = Color.FromArgb(229, 229, 231);
         private readonly Color TextSecondary = Color.FromArgb(161, 161, 170);
@@ -901,6 +903,26 @@ namespace BlossomPrepTool
         private void pictureBox3_Click(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Minimized;
+        }
+
+        /// <summary>
+        /// Apply card border styling to a panel control
+        /// </summary>
+        public static void ApplyCardBorder(Panel card, Color borderColor)
+        {
+            card.Paint -= CardPaintHandler;
+            card.Paint += (s, e) =>
+            {
+                using (Pen borderPen = new Pen(borderColor, 1))
+                {
+                    e.Graphics.DrawRectangle(borderPen, 0, 0, card.Width - 1, card.Height - 1);
+                }
+            };
+        }
+
+        private static void CardPaintHandler(object sender, PaintEventArgs e)
+        {
+            // Placeholder handler for removal
         }
     }
 }

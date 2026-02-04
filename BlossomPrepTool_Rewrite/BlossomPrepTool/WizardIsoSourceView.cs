@@ -24,7 +24,8 @@ namespace BlossomPrepTool
         // Theme colors
         private readonly Color DarkBg = Color.FromArgb(20, 20, 23);
         private readonly Color DarkPanel = Color.FromArgb(20, 20, 23);
-        private readonly Color CardBg = Color.FromArgb(41, 41, 46);
+        private readonly Color CardBg = Color.FromArgb(35, 35, 40);
+        private readonly Color CardBorder = Color.FromArgb(50, 50, 55);
         private readonly Color AccentColor = Color.FromArgb(92, 100, 255);
         private readonly Color TextColor = Color.FromArgb(229, 229, 231);
         private readonly Color TextSecondary = Color.FromArgb(161, 161, 170);
@@ -41,7 +42,11 @@ namespace BlossomPrepTool
             FixLabelTransparency();
             WireUpEvents();
             LayoutCards();
-            this.Resize += (s, e) => LayoutCards();
+            this.Resize += (s, e) => 
+            {
+                LayoutCards();
+                Invalidate();
+            };
         }
 
         private void LayoutCards()

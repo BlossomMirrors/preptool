@@ -18,7 +18,29 @@ namespace BlossomPrepTool
             ApplyRoundedCorners();
             FixLabelTransparency();
             LoadQRCode();
-            this.SizeChanged += (s, e) => ApplyRoundedCorners();
+            this.SizeChanged += (s, e) => 
+            {
+                ApplyRoundedCorners();
+                Invalidate();
+            };
+            EnableAntialiasing();
+            ApplyCardBorders();
+        }
+
+        private void EnableAntialiasing()
+        {
+            picQR.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+            };
+        }
+
+        private void ApplyCardBorders()
+        {
+            cardMain.BackColor = System.Drawing.Color.FromArgb(35, 35, 40);
+            Main.ApplyCardBorder(cardMain, System.Drawing.Color.FromArgb(50, 50, 55));
         }
 
         private void LoadQRCode()

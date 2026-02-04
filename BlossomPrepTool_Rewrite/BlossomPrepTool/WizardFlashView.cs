@@ -21,7 +21,18 @@ namespace BlossomPrepTool
             InitializeComponent();
             ApplyRoundedCorners();
             FixLabelTransparency();
-            this.SizeChanged += (s, e) => ApplyRoundedCorners();
+            this.SizeChanged += (s, e) => 
+            {
+                ApplyRoundedCorners();
+                Invalidate();
+            };
+            ApplyCardBorders();
+        }
+
+        private void ApplyCardBorders()
+        {
+            cardMain.BackColor = System.Drawing.Color.FromArgb(35, 35, 40);
+            Main.ApplyCardBorder(cardMain, System.Drawing.Color.FromArgb(50, 50, 55));
         }
 
         private void ApplyRoundedCorners()

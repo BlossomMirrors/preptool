@@ -44,11 +44,11 @@ namespace BlossomPrepTool
             // 
             // cardMain
             // 
-            this.cardMain.AutoScroll = true;
-            this.cardMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
-            this.cardMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.cardMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.cardMain.AutoScroll = true;
+            this.cardMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(35)))), ((int)(((byte)(40)))));
             this.cardMain.Controls.Add(this.lblQRMessage);
             this.cardMain.Controls.Add(this.picQR);
             this.cardMain.Controls.Add(this.lblKeepUSB);
@@ -62,8 +62,9 @@ namespace BlossomPrepTool
             // 
             // lblQRMessage
             // 
-            this.lblQRMessage.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblQRMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblQRMessage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
+            this.lblQRMessage.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblQRMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(161)))), ((int)(((byte)(161)))), ((int)(((byte)(170)))));
             this.lblQRMessage.Location = new System.Drawing.Point(480, 340);
             this.lblQRMessage.Name = "lblQRMessage";
@@ -74,6 +75,7 @@ namespace BlossomPrepTool
             // 
             // picQR
             // 
+            this.picQR.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picQR.Location = new System.Drawing.Point(480, 132);
             this.picQR.Name = "picQR";
             this.picQR.Size = new System.Drawing.Size(200, 200);
@@ -84,8 +86,8 @@ namespace BlossomPrepTool
             // lblKeepUSB
             // 
             this.lblKeepUSB.AutoSize = true;
-            this.lblKeepUSB.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.lblKeepUSB.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
+            this.lblKeepUSB.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.lblKeepUSB.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(211)))), ((int)(((byte)(77)))));
             this.lblKeepUSB.Location = new System.Drawing.Point(30, 100);
             this.lblKeepUSB.MaximumSize = new System.Drawing.Size(660, 0);
@@ -97,8 +99,8 @@ namespace BlossomPrepTool
             // 
             // lblInstructions
             // 
-            this.lblInstructions.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblInstructions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
+            this.lblInstructions.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblInstructions.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(231)))));
             this.lblInstructions.Location = new System.Drawing.Point(30, 110);
             this.lblInstructions.MaximumSize = new System.Drawing.Size(400, 0);
@@ -110,8 +112,8 @@ namespace BlossomPrepTool
             // lblMessage
             // 
             this.lblMessage.AutoSize = true;
-            this.lblMessage.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.lblMessage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
+            this.lblMessage.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.lblMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(231)))));
             this.lblMessage.Location = new System.Drawing.Point(30, 70);
             this.lblMessage.MaximumSize = new System.Drawing.Size(660, 0);
@@ -123,8 +125,8 @@ namespace BlossomPrepTool
             // lblTitle
             // 
             this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new System.Drawing.Font("Georgia", 24F, System.Drawing.FontStyle.Bold);
             this.lblTitle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
+            this.lblTitle.Font = new System.Drawing.Font("Georgia", 24F, System.Drawing.FontStyle.Bold);
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(197)))), ((int)(((byte)(94)))));
             this.lblTitle.Location = new System.Drawing.Point(30, 20);
             this.lblTitle.Name = "lblTitle";
@@ -134,8 +136,8 @@ namespace BlossomPrepTool
             // 
             // btnFinish
             // 
-            this.btnFinish.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(23)))));
             this.btnFinish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnFinish.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(23)))));
             this.btnFinish.FlatAppearance.BorderSize = 0;
             this.btnFinish.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFinish.Font = new System.Drawing.Font("Segoe UI", 11F);
@@ -150,8 +152,8 @@ namespace BlossomPrepTool
             // 
             // btnReboot
             // 
-            this.btnReboot.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(92)))), ((int)(((byte)(100)))), ((int)(((byte)(255)))));
             this.btnReboot.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnReboot.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(92)))), ((int)(((byte)(100)))), ((int)(((byte)(255)))));
             this.btnReboot.FlatAppearance.BorderSize = 0;
             this.btnReboot.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnReboot.Font = new System.Drawing.Font("Segoe UI", 11F);

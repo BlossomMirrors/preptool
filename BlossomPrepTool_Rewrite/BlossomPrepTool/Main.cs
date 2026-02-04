@@ -76,6 +76,8 @@ namespace BlossomPrepTool
         private System.Windows.Forms.Timer _spinnerTimer;
         private int _spinnerFrame = 0;
         private readonly string[] _spinnerFrames = new[] { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
+        private Label _currentSpinnerLabel;
+        private string _spinnerBaseMessage = "Processing...";
 
         public Main()
         {
@@ -377,18 +379,43 @@ namespace BlossomPrepTool
 
         private void StartSpinner(Label statusLabel)
         {
+            _currentSpinnerLabel = statusLabel;
             if (_spinnerTimer == null)
             {
                 _spinnerTimer = new System.Windows.Forms.Timer { Interval = 80 };
                 _spinnerTimer.Tick += (s, e) =>
                 {
-                    if (statusLabel != null && !statusLabel.IsDisposed)
+                    if (_currentSpinnerLabel != null && !_currentSpinnerLabel.IsDisposed)
                     {
-                        this.Invoke(new Action(() =>
+                        try
                         {
-                            _spinnerFrame = (_spinnerFrame + 1) % _spinnerFrames.Length;
-                            statusLabel.Text = _spinnerFrames[_spinnerFrame] + " Processing...";
-                        }));
+                            if (this.InvokeRequired)
+                            {
+                                this.Invoke(new Action(() =>
+                                {
+                                    _spinnerFrame = (_spinnerFrame + 1) % _spinnerFrames.Length;
+                                    // Only update if the text starts with a spinner character or is the base message
+                                    var currentText = _currentSpinnerLabel.Text;
+                                    if (string.IsNullOrEmpty(currentText) || currentText == _spinnerBaseMessage || Array.Exists(_spinnerFrames, frame => currentText.StartsWith(frame)))
+                                    {
+                                        _currentSpinnerLabel.Text = _spinnerFrames[_spinnerFrame] + " " + _spinnerBaseMessage;
+                                    }
+                                }));
+                            }
+                            else
+                            {
+                                _spinnerFrame = (_spinnerFrame + 1) % _spinnerFrames.Length;
+                                var currentText = _currentSpinnerLabel.Text;
+                                if (string.IsNullOrEmpty(currentText) || currentText == _spinnerBaseMessage || Array.Exists(_spinnerFrames, frame => currentText.StartsWith(frame)))
+                                {
+                                    _currentSpinnerLabel.Text = _spinnerFrames[_spinnerFrame] + " " + _spinnerBaseMessage;
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            _spinnerTimer.Stop();
+                        }
                     }
                     else
                     {
@@ -406,6 +433,7 @@ namespace BlossomPrepTool
             {
                 _spinnerTimer.Stop();
             }
+            _currentSpinnerLabel = null;
         }
 
         protected override void WndProc(ref Message m)

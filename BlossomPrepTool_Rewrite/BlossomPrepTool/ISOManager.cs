@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
-using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace BlossomPrepTool
 {
@@ -90,7 +90,19 @@ namespace BlossomPrepTool
                 using (var client = new HttpClient())
                 {
                     var json = await client.GetStringAsync(MetadataUrl);
-                    _metadata = JsonSerializer.Deserialize<ISOMetadata>(json);
+                    
+                    // Simple JSON parsing for the specific structure
+                    var nameMatch = Regex.Match(json, @"""name""\s*:\s*""([^""]+)""");
+                    var sha256Match = Regex.Match(json, @"""sha256""\s*:\s*""([^""]+)""");
+                    
+                    if (nameMatch.Success && sha256Match.Success)
+                    {
+                        _metadata = new ISOMetadata
+                        {
+                            name = nameMatch.Groups[1].Value,
+                            sha256 = sha256Match.Groups[1].Value
+                        };
+                    }
                 }
             }
             catch

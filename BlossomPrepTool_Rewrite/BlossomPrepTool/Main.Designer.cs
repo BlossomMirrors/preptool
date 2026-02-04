@@ -272,9 +272,9 @@
             this.DoubleBuffered = true;
             this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(231)))));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Main";
             this.Padding = new System.Windows.Forms.Padding(10, 30, 10, 10);
-            this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "BlossomPrep Tool";
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Main_MouseDown);

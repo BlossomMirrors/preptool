@@ -63,6 +63,8 @@ namespace BlossomPrepTool
             
             InitializeFadeStates();
             SetupButtonHoverEffects();
+
+            btnRefreshUSB_Click(null, null);
         }
         
         private void LoadInitialData()

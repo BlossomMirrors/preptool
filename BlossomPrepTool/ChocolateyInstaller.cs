@@ -54,6 +54,8 @@ namespace BlossomPrepTool
         /// </summary>
         public static async Task<bool> InstallChocolatey(Action<string> progressCallback = null)
         {
+            var tempDir = Path.Combine(Path.GetTempPath(), "ChocoInstall_" + Guid.NewGuid().ToString("N"));
+
             try
             {
                 progressCallback?.Invoke("Downloading Chocolatey installer...");
@@ -67,32 +69,16 @@ namespace BlossomPrepTool
 
                 progressCallback?.Invoke("Executing Chocolatey installation...");
 
-                // Create batch file that will execute the PowerShell script inline
-                var batchContent = new StringBuilder();
-                batchContent.AppendLine("@echo off");
-                batchContent.AppendLine("SET DIR=%~dp0%");
-                
-                // Set environment variables that Chocolatey installer expects
-                batchContent.AppendLine("SET chocolateyUseWindowsCompression=true");
-                
-                // Use cmd to execute PowerShell without showing window
-                var escapedScript = installScript
-                    .Replace("\"", "\"\"")
-                    .Replace("%", "%%");
-                
-                batchContent.AppendLine($"powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& {{ {escapedScript} }}\"");
-                batchContent.AppendLine("exit /b %ERRORLEVEL%");
-
-                var tempDir = Path.Combine(Path.GetTempPath(), "ChocoInstall_" + Guid.NewGuid().ToString("N"));
+                // Create temp directory and save the PowerShell script directly
                 Directory.CreateDirectory(tempDir);
-                var batchPath = Path.Combine(tempDir, "install_choco.bat");
+                var scriptPath = Path.Combine(tempDir, "install_choco.ps1");
+                File.WriteAllText(scriptPath, installScript, Encoding.UTF8);
 
-                File.WriteAllText(batchPath, batchContent.ToString());
-
-                // Execute the batch file
+                // Execute the PowerShell script directly with -File parameter (safer than -Command)
                 var psi = new ProcessStartInfo
                 {
-                    FileName = batchPath,
+                    FileName = "powershell.exe",
+                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -106,13 +92,6 @@ namespace BlossomPrepTool
                     var error = await process.StandardError.ReadToEndAsync();
                     
                     process.WaitForExit();
-
-                    // Clean up
-                    try
-                    {
-                        Directory.Delete(tempDir, true);
-                    }
-                    catch { }
 
                     if (process.ExitCode != 0)
                     {
@@ -131,6 +110,16 @@ namespace BlossomPrepTool
             {
                 progressCallback?.Invoke($"Installation error: {ex.Message}");
                 return false;
+            }
+            finally
+            {
+                // Clean up
+                try
+                {
+                    if (Directory.Exists(tempDir))
+                        Directory.Delete(tempDir, true);
+                }
+                catch { }
             }
         }
 

@@ -106,36 +106,36 @@ namespace BlossomPrepTool
                 {
                     if (!ChocolateyInstaller.IsInstalled())
                     {
-                        AppendLog("Chocolatey not installed, cannot install balena-etcher-cli");
+                        AppendLog("Chocolatey not installed, cannot install balena-cli");
                         return false;
                     }
 
-                    // Check if balena-etcher-cli is installed
-                    if (ChocolateyInstaller.IsPackageInstalled("balena-etcher-cli"))
+                    // Check if balena-cli is installed
+                    if (ChocolateyInstaller.IsPackageInstalled("balena-cli"))
                     {
-                        AppendLog("balena-etcher-cli already installed");
-                        ReportProgress("balena-etcher-cli already installed", "success");
+                        AppendLog("balena-cli already installed");
+                        ReportProgress("balena-cli already installed", "success");
                         return true;
                     }
 
-                    AppendLog("Installing balena-etcher-cli package...");
-                    ReportProgress("Installing balena-etcher-cli...", "info");
-                    bool result = ChocolateyInstaller.InstallPackage("balena-etcher-cli", msg => { AppendLog($"etcher install: {msg}"); ReportProgress(msg, "info"); });
+                    AppendLog("Installing balena-cli package...");
+                    ReportProgress("Installing balena-cli...", "info");
+                    bool result = ChocolateyInstaller.InstallPackage("balena-cli", msg => { AppendLog($"etcher install: {msg}"); ReportProgress(msg, "info"); });
                     if (result)
                     {
-                        AppendLog("balena-etcher-cli installed successfully");
-                        ReportProgress("balena-etcher-cli installed", "success");
+                        AppendLog("balena-cli installed successfully");
+                        ReportProgress("balena-cli installed", "success");
                     }
                     else
                     {
-                        AppendLog("balena-etcher-cli installation returned false");
+                        AppendLog("balena-cli installation returned false");
                     }
                     return result;
                 }
                 catch (Exception ex)
                 {
                     AppendLog($"Exception in EnsureBalenaEtcherInstalled: {ex}");
-                    ReportProgress($"balena-etcher-cli installation failed: {ex.Message}", "error");
+                    ReportProgress($"balena-cli installation failed: {ex.Message}", "error");
                     return false;
                 }
             });
@@ -149,17 +149,17 @@ namespace BlossomPrepTool
             {
                 try
                 {
-                    var etcherPath = GetBalenaEtcherPath();
-                    if (string.IsNullOrEmpty(etcherPath))
-                        throw new Exception("balena-etcher-cli executable not found");
+                    var balenaPath = GetBalenaEtcherPath();
+                    if (string.IsNullOrEmpty(balenaPath))
+                        throw new Exception("balena-cli executable not found");
 
                     // Get the drive path from disk number (e.g., \\.\PhysicalDrive1)
                     var drivePath = $"\\\\.\\PhysicalDrive{diskNumber}";
 
                     var psi = new ProcessStartInfo
                     {
-                        FileName = etcherPath,
-                        Arguments = $"\"{isoPath}\" --drive \"{drivePath}\" --yes",
+                        FileName = balenaPath,
+                        Arguments = $"local flash \"{isoPath}\" --drive \"{drivePath}\" --yes",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
@@ -216,9 +216,9 @@ namespace BlossomPrepTool
                         outputThread.Join(5000);
                         errorThread.Join(5000);
 
-                        AppendLog($"balena-etcher-cli exited with code: {process.ExitCode}");
+                        AppendLog($"balena-cli exited with code: {process.ExitCode}");
                         if (process.ExitCode != 0)
-                            throw new Exception($"balena-etcher-cli exited with code {process.ExitCode}");
+                            throw new Exception($"balena-cli exited with code {process.ExitCode}");
                     }
                 }
                 catch (Exception ex)
@@ -233,14 +233,14 @@ namespace BlossomPrepTool
         {
             try
             {
-                var result = RunCommand("where.exe", "balena-etcher-cli");
+                var result = RunCommand("where.exe", "balena");
                 if (!string.IsNullOrEmpty(result))
                 {
                     var etcherPath = result.Trim();
-                    AppendLog($"balena-etcher-cli found at: {etcherPath}");
+                    AppendLog($"balena-cli found at: {etcherPath}");
                     return etcherPath;
                 }
-                AppendLog("balena-etcher-cli not found in PATH");
+                AppendLog("balena-cli not found in PATH");
             }
             catch (Exception ex)
             {

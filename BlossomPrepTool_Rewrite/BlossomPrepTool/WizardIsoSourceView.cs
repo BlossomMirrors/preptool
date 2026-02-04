@@ -54,7 +54,7 @@ namespace BlossomPrepTool
             int padding = 40;
             int gap = 20;
             int top = 120;
-            int bottomPadding = 80;
+            int bottomPadding = 115;
 
             int availableWidth = Math.Max(0, this.ClientSize.Width - (padding * 2) - (gap * 2));
             int cardWidth = Math.Max(200, availableWidth / 3);

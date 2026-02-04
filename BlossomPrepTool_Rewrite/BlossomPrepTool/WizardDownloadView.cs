@@ -1,4 +1,6 @@
 using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace BlossomPrepTool
@@ -20,8 +22,37 @@ namespace BlossomPrepTool
         public WizardDownloadView()
         {
             InitializeComponent();
-            CenterProgressBar();
+            ApplyRoundedCorners();
+            FixLabelTransparency();
         }
+
+        private void ApplyRoundedCorners()
+        {
+            // Round card
+            cardMain.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, cardMain.Width, cardMain.Height, 12, 12));
+            
+            // Round buttons
+            btnBack.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnBack.Width, btnBack.Height, 8, 8));
+            btnPause.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnPause.Width, btnPause.Height, 8, 8));
+            btnCancel.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnCancel.Width, btnCancel.Height, 8, 8));
+            btnNext.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnNext.Width, btnNext.Height, 8, 8));
+        }
+
+        private void FixLabelTransparency()
+        {
+            lblTitle.Parent = cardMain;
+            lblStatus.Parent = cardMain;
+        }
+
+        [System.Runtime.InteropServices.DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
+        private static extern IntPtr CreateRoundRectRgn(
+            int nLeftRect,
+            int nTopRect,
+            int nRightRect,
+            int nBottomRect,
+            int nWidthEllipse,
+            int nHeightEllipse
+        );
 
         private void btnNext_Click(object sender, EventArgs e)
         {
@@ -41,18 +72,6 @@ namespace BlossomPrepTool
         private void btnBack_Click(object sender, EventArgs e)
         {
             BackClicked?.Invoke(this, e);
-        }
-
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            base.OnSizeChanged(e);
-            CenterProgressBar();
-        }
-
-        private void CenterProgressBar()
-        {
-            if (progressBar == null) return;
-            progressBar.Left = (this.ClientSize.Width - progressBar.Width) / 2;
         }
     }
 }

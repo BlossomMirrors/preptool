@@ -28,48 +28,61 @@ namespace BlossomPrepTool
         /// </summary>
         private void InitializeComponent()
         {
+            this.cardMain = new System.Windows.Forms.Panel();
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblMessage = new System.Windows.Forms.Label();
             this.btnFinish = new System.Windows.Forms.Button();
+            this.cardMain.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // cardMain
+            // 
+            this.cardMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
+            this.cardMain.Controls.Add(this.lblMessage);
+            this.cardMain.Controls.Add(this.lblTitle);
+            this.cardMain.Location = new System.Drawing.Point(40, 100);
+            this.cardMain.Name = "cardMain";
+            this.cardMain.Size = new System.Drawing.Size(720, 300);
+            this.cardMain.TabIndex = 0;
             // 
             // lblTitle
             // 
-            this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblTitle.AutoSize = true;
+            this.lblTitle.Font = new System.Drawing.Font("Georgia", 24F, System.Drawing.FontStyle.Bold);
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(197)))), ((int)(((byte)(94)))));
-            this.lblTitle.Location = new System.Drawing.Point(0, 0);
+            this.lblTitle.Location = new System.Drawing.Point(30, 30);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Padding = new System.Windows.Forms.Padding(20, 20, 20, 10);
-            this.lblTitle.Size = new System.Drawing.Size(800, 60);
+            this.lblTitle.Size = new System.Drawing.Size(362, 38);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "✓ Setup Complete!";
             // 
             // lblMessage
             // 
-            this.lblMessage.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblMessage.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblMessage.AutoSize = true;
+            this.lblMessage.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.lblMessage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(231)))));
-            this.lblMessage.Location = new System.Drawing.Point(0, 60);
+            this.lblMessage.Location = new System.Drawing.Point(30, 100);
+            this.lblMessage.MaximumSize = new System.Drawing.Size(660, 0);
             this.lblMessage.Name = "lblMessage";
-            this.lblMessage.Padding = new System.Windows.Forms.Padding(20, 10, 20, 10);
-            this.lblMessage.Size = new System.Drawing.Size(800, 80);
+            this.lblMessage.Size = new System.Drawing.Size(435, 40);
             this.lblMessage.TabIndex = 1;
-            this.lblMessage.Text = "Your USB drive is ready.\nRestart your computer and boot from USB.";
+            this.lblMessage.Text = "Your USB drive is ready.\r\nRestart your computer and boot from USB.";
             // 
             // btnFinish
             // 
-            this.btnFinish.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.btnFinish.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(23)))));
+            this.btnFinish.FlatAppearance.BorderSize = 0;
+            this.btnFinish.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(197)))), ((int)(((byte)(94)))));
+            this.btnFinish.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(23)))));
             this.btnFinish.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFinish.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.btnFinish.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.btnFinish.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(231)))));
-            this.btnFinish.Location = new System.Drawing.Point(0, 550);
+            this.btnFinish.Location = new System.Drawing.Point(560, 500);
             this.btnFinish.Name = "btnFinish";
-            this.btnFinish.Padding = new System.Windows.Forms.Padding(20, 10, 20, 10);
-            this.btnFinish.Size = new System.Drawing.Size(800, 50);
-            this.btnFinish.TabIndex = 2;
+            this.btnFinish.Size = new System.Drawing.Size(200, 50);
+            this.btnFinish.TabIndex = 1;
             this.btnFinish.Text = "Finish";
-            this.btnFinish.UseVisualStyleBackColor = true;
+            this.btnFinish.UseVisualStyleBackColor = false;
             this.btnFinish.Click += new System.EventHandler(this.btnFinish_Click);
             // 
             // WizardCompleteView
@@ -77,16 +90,18 @@ namespace BlossomPrepTool
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(23)))));
             this.Controls.Add(this.btnFinish);
-            this.Controls.Add(this.lblMessage);
-            this.Controls.Add(this.lblTitle);
+            this.Controls.Add(this.cardMain);
             this.Name = "WizardCompleteView";
             this.Size = new System.Drawing.Size(800, 600);
+            this.cardMain.ResumeLayout(false);
+            this.cardMain.PerformLayout();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
+        private System.Windows.Forms.Panel cardMain;
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Label lblMessage;
         private System.Windows.Forms.Button btnFinish;

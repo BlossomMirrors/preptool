@@ -1,4 +1,6 @@
 using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace BlossomPrepTool
@@ -18,9 +20,40 @@ namespace BlossomPrepTool
         {
             InitializeComponent();
             
+            ApplyRoundedCorners();
+            FixLabelTransparency();
+            
             // Trigger initial USB refresh when view is loaded
             this.Load += (s, e) => RefreshClicked?.Invoke(this, EventArgs.Empty);
         }
+
+        private void ApplyRoundedCorners()
+        {
+            // Round card
+            cardMain.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, cardMain.Width, cardMain.Height, 12, 12));
+            
+            // Round buttons
+            btnRefresh.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnRefresh.Width, btnRefresh.Height, 8, 8));
+            btnNext.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnNext.Width, btnNext.Height, 8, 8));
+            btnBack.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnBack.Width, btnBack.Height, 8, 8));
+        }
+
+        private void FixLabelTransparency()
+        {
+            lblTitle.Parent = cardMain;
+            lblDriveLabel.Parent = cardMain;
+            lblSelected.Parent = cardMain;
+        }
+
+        [System.Runtime.InteropServices.DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
+        private static extern IntPtr CreateRoundRectRgn(
+            int nLeftRect,
+            int nTopRect,
+            int nRightRect,
+            int nBottomRect,
+            int nWidthEllipse,
+            int nHeightEllipse
+        );
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {

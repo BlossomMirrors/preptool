@@ -1,4 +1,6 @@
 using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace BlossomPrepTool
@@ -10,7 +12,34 @@ namespace BlossomPrepTool
         public WizardCompleteView()
         {
             InitializeComponent();
+            ApplyRoundedCorners();
+            FixLabelTransparency();
         }
+
+        private void ApplyRoundedCorners()
+        {
+            // Round card
+            cardMain.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, cardMain.Width, cardMain.Height, 12, 12));
+            
+            // Round button
+            btnFinish.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnFinish.Width, btnFinish.Height, 8, 8));
+        }
+
+        private void FixLabelTransparency()
+        {
+            lblTitle.Parent = cardMain;
+            lblMessage.Parent = cardMain;
+        }
+
+        [System.Runtime.InteropServices.DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
+        private static extern IntPtr CreateRoundRectRgn(
+            int nLeftRect,
+            int nTopRect,
+            int nRightRect,
+            int nBottomRect,
+            int nWidthEllipse,
+            int nHeightEllipse
+        );
 
         private void btnFinish_Click(object sender, EventArgs e)
         {

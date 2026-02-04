@@ -22,6 +22,7 @@ namespace BlossomPrepTool
             
             ApplyRoundedCorners();
             FixLabelTransparency();
+            this.SizeChanged += (s, e) => ApplyRoundedCorners();
             
             // Trigger initial USB refresh when view is loaded
             this.Load += (s, e) => RefreshClicked?.Invoke(this, EventArgs.Empty);

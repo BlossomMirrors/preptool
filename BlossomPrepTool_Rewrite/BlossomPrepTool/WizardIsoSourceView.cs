@@ -40,6 +40,34 @@ namespace BlossomPrepTool
             ApplyRoundedCards();
             FixLabelTransparency();
             WireUpEvents();
+            LayoutCards();
+            this.Resize += (s, e) => LayoutCards();
+        }
+
+        private void LayoutCards()
+        {
+            int padding = 40;
+            int gap = 20;
+            int top = 120;
+            int bottomPadding = 80;
+
+            int availableWidth = Math.Max(0, this.ClientSize.Width - (padding * 2) - (gap * 2));
+            int cardWidth = Math.Max(200, availableWidth / 3);
+            int cardHeight = Math.Max(240, this.ClientSize.Height - top - bottomPadding);
+
+            cardDownload.SetBounds(padding, top, cardWidth, cardHeight);
+            cardUseOwn.SetBounds(padding + cardWidth + gap, top, cardWidth, cardHeight);
+            cardRestore.SetBounds(padding + (cardWidth + gap) * 2, top, cardWidth, cardHeight);
+
+            btnBack.Size = new Size(200, 50);
+            btnBack.Location = new Point(padding, this.ClientSize.Height - btnBack.Height - 40);
+            btnBack.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+            btnDownload.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            btnUseOwn.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            btnRestore.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+            ApplyRoundedCards();
         }
 
         private void ApplyRoundedCards()

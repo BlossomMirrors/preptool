@@ -46,6 +46,9 @@ namespace BlossomPrepTool
             // 
             this.cardMain.AutoScroll = true;
             this.cardMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
+            this.cardMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cardMain.Controls.Add(this.lblQRMessage);
             this.cardMain.Controls.Add(this.picQR);
             this.cardMain.Controls.Add(this.lblKeepUSB);
@@ -132,6 +135,7 @@ namespace BlossomPrepTool
             // btnFinish
             // 
             this.btnFinish.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(23)))));
+            this.btnFinish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFinish.FlatAppearance.BorderSize = 0;
             this.btnFinish.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnFinish.Font = new System.Drawing.Font("Segoe UI", 11F);
@@ -147,6 +151,7 @@ namespace BlossomPrepTool
             // btnReboot
             // 
             this.btnReboot.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(92)))), ((int)(((byte)(100)))), ((int)(((byte)(255)))));
+            this.btnReboot.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnReboot.FlatAppearance.BorderSize = 0;
             this.btnReboot.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnReboot.Font = new System.Drawing.Font("Segoe UI", 11F);

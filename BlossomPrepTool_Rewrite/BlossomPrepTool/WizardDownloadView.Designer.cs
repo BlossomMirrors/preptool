@@ -44,6 +44,9 @@ namespace BlossomPrepTool
             // cardMain
             // 
             this.cardMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(41)))), ((int)(((byte)(46)))));
+            this.cardMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cardMain.Controls.Add(this.lblStatus);
             this.cardMain.Controls.Add(this.progressBar);
             this.cardMain.Controls.Add(this.lblTitle);
@@ -85,6 +88,8 @@ namespace BlossomPrepTool
             // 
             // downloadActionsPanel
             // 
+            this.downloadActionsPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.downloadActionsPanel.Controls.Add(this.btnCancel);
             this.downloadActionsPanel.Controls.Add(this.btnPause);
             this.downloadActionsPanel.Controls.Add(this.btnBack);
@@ -150,6 +155,7 @@ namespace BlossomPrepTool
             // btnNext
             // 
             this.btnNext.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(23)))));
+            this.btnNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnNext.Enabled = false;
             this.btnNext.FlatAppearance.BorderSize = 0;
             this.btnNext.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(92)))), ((int)(((byte)(100)))), ((int)(((byte)(255)))));

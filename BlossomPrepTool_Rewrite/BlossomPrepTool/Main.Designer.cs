@@ -68,7 +68,7 @@
             this.close.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.close.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("close.BackgroundImage")));
             this.close.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.close.Location = new System.Drawing.Point(871, 9);
+            this.close.Location = new System.Drawing.Point(869, 9);
             this.close.Name = "close";
             this.close.Size = new System.Drawing.Size(16, 16);
             this.close.TabIndex = 0;
@@ -80,7 +80,7 @@
             this.maximize_normalize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.maximize_normalize.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("maximize_normalize.BackgroundImage")));
             this.maximize_normalize.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.maximize_normalize.Location = new System.Drawing.Point(841, 9);
+            this.maximize_normalize.Location = new System.Drawing.Point(837, 9);
             this.maximize_normalize.Name = "maximize_normalize";
             this.maximize_normalize.Size = new System.Drawing.Size(16, 16);
             this.maximize_normalize.TabIndex = 1;
@@ -92,7 +92,7 @@
             this.minimize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.minimize.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("minimize.BackgroundImage")));
             this.minimize.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.minimize.Location = new System.Drawing.Point(810, 9);
+            this.minimize.Location = new System.Drawing.Point(806, 9);
             this.minimize.Name = "minimize";
             this.minimize.Size = new System.Drawing.Size(16, 16);
             this.minimize.TabIndex = 2;

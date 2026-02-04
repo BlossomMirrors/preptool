@@ -21,6 +21,7 @@ namespace BlossomPrepTool
             InitializeComponent();
             ApplyRoundedCorners();
             FixLabelTransparency();
+            this.SizeChanged += (s, e) => ApplyRoundedCorners();
         }
 
         private void ApplyRoundedCorners()

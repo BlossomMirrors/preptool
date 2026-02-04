@@ -37,6 +37,38 @@ namespace BlossomPrepTool
             ApplyRoundedCards();
             FixLabelTransparency();
             WireUpEvents();
+            LayoutCards();
+            this.Resize += (s, e) => LayoutCards();
+        }
+
+        private void LayoutCards()
+        {
+            int padding = 40;
+            int gap = 20;
+            int headerHeight = 140;
+            int topCards = padding + headerHeight + 20;
+            int bottomPadding = 40;
+
+            int availableWidth = Math.Max(0, this.ClientSize.Width - (padding * 2) - gap);
+            int cardWidth = Math.Max(240, availableWidth / 2);
+            int cardHeight = Math.Max(240, this.ClientSize.Height - topCards - bottomPadding);
+
+            cardWelcome.SetBounds(padding, padding, Math.Max(300, this.ClientSize.Width - (padding * 2)), headerHeight);
+            cardLeft.SetBounds(padding, topCards, cardWidth, cardHeight);
+            cardRight.SetBounds(padding + cardWidth + gap, topCards, cardWidth, cardHeight);
+
+            int buttonHeight = 45;
+            int buttonMargin = 30;
+            int buttonY = Math.Max(120, cardHeight - buttonHeight - buttonMargin);
+            int buttonWidth = Math.Max(180, cardWidth - (buttonMargin * 2));
+
+            btnManualSetup.SetBounds(buttonMargin, buttonY, buttonWidth, buttonHeight);
+            btnGetStarted.SetBounds(buttonMargin, buttonY, buttonWidth, buttonHeight);
+
+            lblManualTitle.MaximumSize = new Size(buttonWidth, 0);
+            lblGetStartedTitle.MaximumSize = new Size(buttonWidth, 0);
+
+            ApplyRoundedCards();
         }
 
         private void FixLabelTransparency()

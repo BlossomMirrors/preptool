@@ -48,6 +48,14 @@ namespace BlossomPrepTool
         private ButtonFadeState maximizeFadeState;
         private ButtonFadeState minimizeFadeState;
 
+        private class ButtonThemeState
+        {
+            public Color? EnabledBackColor { get; set; }
+            public Color? EnabledForeColor { get; set; }
+        }
+
+        private readonly Dictionary<Button, ButtonThemeState> _buttonThemeStates = new Dictionary<Button, ButtonThemeState>();
+
         private const int FADE_DURATION_MS = 100;
         private const int FADE_TIMER_INTERVAL = 15;
         private const int RESIZE_HANDLE_SIZE = 10;
@@ -204,27 +212,9 @@ namespace BlossomPrepTool
             {
                 if (ctrl is Button btn)
                 {
-                    if (!string.Equals(btn.Tag as string, "ThemeOverride", StringComparison.Ordinal))
-                    {
-                        bool hasCustomBack = btn.BackColor != SystemColors.Control && btn.BackColor != Color.Empty && btn.BackColor != Color.Transparent;
-                        bool hasCustomFore = btn.ForeColor != SystemColors.ControlText && btn.ForeColor != Color.Empty && btn.ForeColor != Color.Transparent;
-
-                        if (!hasCustomBack)
-                        {
-                            btn.BackColor = DarkPanel;
-                        }
-
-                        if (!hasCustomFore)
-                        {
-                            btn.ForeColor = TextColor;
-                        }
-                    }
-
-                    btn.FlatStyle = FlatStyle.Flat;
-                    btn.FlatAppearance.BorderSize = 0;
-                    btn.FlatAppearance.MouseDownBackColor = AccentColor;
-                    btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(60, 60, 70);
-                    btn.Cursor = Cursors.Hand;
+                    ApplyButtonTheme(btn);
+                    btn.EnabledChanged -= ButtonEnabledChanged;
+                    btn.EnabledChanged += ButtonEnabledChanged;
                 }
                 else if (ctrl is Label lbl)
                 {
@@ -262,6 +252,70 @@ namespace BlossomPrepTool
                     num.BackColor = DarkPanel;
                     num.ForeColor = TextColor;
                 }
+            }
+        }
+
+        private void ApplyButtonTheme(Button btn)
+        {
+            bool themeOverride = string.Equals(btn.Tag as string, "ThemeOverride", StringComparison.Ordinal);
+            bool hasCustomBack = btn.BackColor != SystemColors.Control && btn.BackColor != Color.Empty && btn.BackColor != Color.Transparent;
+            bool hasCustomFore = btn.ForeColor != SystemColors.ControlText && btn.ForeColor != Color.Empty && btn.ForeColor != Color.Transparent;
+
+            if (!_buttonThemeStates.TryGetValue(btn, out var state))
+            {
+                state = new ButtonThemeState();
+                _buttonThemeStates[btn] = state;
+            }
+
+            if (btn.Enabled)
+            {
+                if (!themeOverride)
+                {
+                    if (!hasCustomBack)
+                    {
+                        btn.BackColor = DarkPanel;
+                    }
+
+                    if (!hasCustomFore)
+                    {
+                        btn.ForeColor = TextColor;
+                    }
+                }
+
+                state.EnabledBackColor = btn.BackColor;
+                state.EnabledForeColor = btn.ForeColor;
+            }
+
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.UseVisualStyleBackColor = false;
+            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.MouseDownBackColor = AccentColor;
+            btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(60, 60, 70);
+            btn.Cursor = btn.Enabled ? Cursors.Hand : Cursors.Default;
+
+            if (!btn.Enabled && !themeOverride)
+            {
+                var baseBack = state.EnabledBackColor ?? btn.BackColor;
+                var baseFore = state.EnabledForeColor ?? btn.ForeColor;
+
+                btn.BackColor = ControlPaint.Dark(baseBack, 0.2f);
+                btn.ForeColor = Color.FromArgb(120, 120, 130);
+
+                if (baseFore != Color.Empty && baseFore != Color.Transparent && baseFore != SystemColors.ControlText)
+                {
+                    btn.ForeColor = ControlPaint.Light(baseFore, 0.2f);
+                }
+
+                btn.FlatAppearance.MouseDownBackColor = btn.BackColor;
+                btn.FlatAppearance.MouseOverBackColor = btn.BackColor;
+            }
+        }
+
+        private void ButtonEnabledChanged(object sender, EventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                ApplyButtonTheme(btn);
             }
         }
 
@@ -306,8 +360,15 @@ namespace BlossomPrepTool
                 if (ctrl is Button btn && btn != btnDownloadISO && btn != btnFlashUSB &&
                     btn != btnResizePartition && btn != btnInstallWinBTRFS)
                 {
-                    btn.MouseEnter += (s, e) => btn.BackColor = Color.FromArgb(60, 60, 70);
-                    btn.MouseLeave += (s, e) => btn.BackColor = DarkPanel;
+                    bool themeOverride = string.Equals(btn.Tag as string, "ThemeOverride", StringComparison.Ordinal);
+                    bool hasCustomBack = btn.BackColor != SystemColors.Control && btn.BackColor != Color.Empty && btn.BackColor != Color.Transparent;
+
+                    if (!themeOverride && !hasCustomBack)
+                    {
+                        btn.MouseEnter += (s, e) => btn.BackColor = Color.FromArgb(60, 60, 70);
+                    }
+
+                    btn.MouseLeave += (s, e) => ApplyButtonTheme(btn);
                 }
             }
         }

@@ -18,6 +18,7 @@ namespace BlossomPrepTool
             ApplyRoundedCorners();
             FixLabelTransparency();
             LoadQRCode();
+            this.SizeChanged += (s, e) => ApplyRoundedCorners();
         }
 
         private void LoadQRCode()

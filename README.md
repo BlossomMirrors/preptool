@@ -8,10 +8,6 @@
 
 <br>
 
-BlossomOS Switch (internally named preptool) is a Windows utility that prepares a PC for installing BlossomOS. It guides users through creating a recovery USB and (optionally) configuring a Windows system for dual‑boot.
-
-<br>
-
 ## Highlights
 
 - Guided wizard with two setup modes: **Just Flash USB** and **Dual‑Boot Setup**

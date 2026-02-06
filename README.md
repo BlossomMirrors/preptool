@@ -1,7 +1,7 @@
 <div align="center">
 	<img src="app-icon.png" alt="BlossomOS Switch App Icon" width="120" />
 
-<h1 style="border:0;">BlossomOS Switch</h1>
+<h1 style="border:0 !important;">BlossomOS Switch</h1>
 
 **Preperation tool to make Windows dual-boot work easily with BlossomOS**
 </div>

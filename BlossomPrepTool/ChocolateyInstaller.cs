@@ -181,6 +181,7 @@ namespace BlossomPrepTool
 
                     if (process.ExitCode == 0)
                     {
+                        RefreshEnvironmentPath();
                         progressCallback?.Invoke($"{packageName} installed successfully");
                         return true;
                     }

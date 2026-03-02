@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Management;
 
@@ -123,14 +124,14 @@ namespace BlossomPrepTool
 
                 foreach (var logicalDisk in logicalDisks)
                 {
-                    var volumeName = logicalDisk["VolumeName"]?.ToString();
+                    var driveLetter = logicalDisk["Name"]?.ToString();
+                    var volumeName = GetLogicalDiskVolumeName(driveLetter);
 
-                    if (string.IsNullOrWhiteSpace(volumeName))
-                    {
-                        var driveLetter = logicalDisk["Name"]?.ToString();
-                        if (!string.IsNullOrWhiteSpace(driveLetter))
-                            volumeName = GetVolumeLabelByDriveLetter(driveLetter);
-                    }
+                    if (string.IsNullOrWhiteSpace(volumeName) && !string.IsNullOrWhiteSpace(driveLetter))
+                        volumeName = GetVolumeLabelByDriveLetter(driveLetter);
+
+                    if (string.IsNullOrWhiteSpace(volumeName) && !string.IsNullOrWhiteSpace(driveLetter))
+                        volumeName = GetDriveInfoVolumeLabel(driveLetter);
 
                     if (!string.IsNullOrWhiteSpace(volumeName))
                         labels.Add(volumeName);
@@ -219,6 +220,54 @@ namespace BlossomPrepTool
                             return label;
                     }
                 }
+            }
+            catch
+            {
+            }
+
+            return null;
+        }
+
+        private static string GetLogicalDiskVolumeName(string driveLetter)
+        {
+            if (string.IsNullOrWhiteSpace(driveLetter))
+                return null;
+
+            try
+            {
+                var scope = new ManagementScope(@"\\.\root\cimv2");
+                scope.Connect();
+
+                var escapedDriveLetter = EscapeWmiString(driveLetter);
+                var query = new ObjectQuery($"SELECT VolumeName FROM Win32_LogicalDisk WHERE DeviceID = '{escapedDriveLetter}'");
+                using (var searcher = new ManagementObjectSearcher(scope, query))
+                {
+                    foreach (ManagementObject logicalDisk in searcher.Get())
+                    {
+                        var volumeName = logicalDisk["VolumeName"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(volumeName))
+                            return volumeName;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
+        }
+
+        private static string GetDriveInfoVolumeLabel(string driveLetter)
+        {
+            if (string.IsNullOrWhiteSpace(driveLetter))
+                return null;
+
+            try
+            {
+                var rootPath = driveLetter.EndsWith("\\") ? driveLetter : driveLetter + "\\";
+                var driveInfo = new DriveInfo(rootPath);
+                if (!string.IsNullOrWhiteSpace(driveInfo.VolumeLabel))
+                    return driveInfo.VolumeLabel;
             }
             catch
             {

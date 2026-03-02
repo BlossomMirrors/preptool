@@ -125,6 +125,13 @@ namespace BlossomPrepTool
                 {
                     var volumeName = logicalDisk["VolumeName"]?.ToString();
 
+                    if (string.IsNullOrWhiteSpace(volumeName))
+                    {
+                        var driveLetter = logicalDisk["Name"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(driveLetter))
+                            volumeName = GetVolumeLabelByDriveLetter(driveLetter);
+                    }
+
                     if (!string.IsNullOrWhiteSpace(volumeName))
                         labels.Add(volumeName);
                 }
@@ -169,42 +176,63 @@ namespace BlossomPrepTool
             var scope = new ManagementScope(@"\\.\root\cimv2");
             scope.Connect();
 
-            var diskQuery = new ObjectQuery($"SELECT DeviceID FROM Win32_DiskDrive WHERE Index = {diskIndex}");
-            using (var diskSearcher = new ManagementObjectSearcher(scope, diskQuery))
+            var partitionQuery = new ObjectQuery($"SELECT DeviceID FROM Win32_DiskPartition WHERE DiskIndex = {diskIndex}");
+            using (var partitionSearcher = new ManagementObjectSearcher(scope, partitionQuery))
             {
-                foreach (ManagementObject physicalDisk in diskSearcher.Get())
+                foreach (ManagementObject partition in partitionSearcher.Get())
                 {
-                    var deviceId = physicalDisk["DeviceID"]?.ToString();
-                    if (string.IsNullOrWhiteSpace(deviceId))
+                    var partitionDeviceId = partition["DeviceID"]?.ToString();
+                    if (string.IsNullOrWhiteSpace(partitionDeviceId))
                         continue;
 
-                    var escapedDeviceId = deviceId.Replace("\\", "\\\\").Replace("'", "\\'");
-                    var partitionQuery = new ObjectQuery($"ASSOCIATORS OF {{Win32_DiskDrive.DeviceID='{escapedDeviceId}'}} WHERE AssocClass = Win32_DiskDriveToDiskPartition");
+                    var escapedPartitionDeviceId = EscapeWmiString(partitionDeviceId);
+                    var logicalDiskQuery = new ObjectQuery($"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{escapedPartitionDeviceId}'}} WHERE AssocClass = Win32_LogicalDiskToPartition");
 
-                    using (var partitionSearcher = new ManagementObjectSearcher(scope, partitionQuery))
+                    using (var logicalDiskSearcher = new ManagementObjectSearcher(scope, logicalDiskQuery))
                     {
-                        foreach (ManagementObject partition in partitionSearcher.Get())
+                        foreach (ManagementObject logicalDisk in logicalDiskSearcher.Get())
                         {
-                            var partitionDeviceId = partition["DeviceID"]?.ToString();
-                            if (string.IsNullOrWhiteSpace(partitionDeviceId))
-                                continue;
-
-                            var escapedPartitionDeviceId = partitionDeviceId.Replace("\\", "\\\\").Replace("'", "\\'");
-                            var logicalDiskQuery = new ObjectQuery($"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{escapedPartitionDeviceId}'}} WHERE AssocClass = Win32_LogicalDiskToPartition");
-
-                            using (var logicalDiskSearcher = new ManagementObjectSearcher(scope, logicalDiskQuery))
-                            {
-                                foreach (ManagementObject logicalDisk in logicalDiskSearcher.Get())
-                                {
-                                    logicalDisks.Add(logicalDisk);
-                                }
-                            }
+                            logicalDisks.Add(logicalDisk);
                         }
                     }
                 }
             }
 
             return logicalDisks;
+        }
+
+        private static string GetVolumeLabelByDriveLetter(string driveLetter)
+        {
+            try
+            {
+                var scope = new ManagementScope(@"\\.\root\cimv2");
+                scope.Connect();
+
+                var escapedDriveLetter = EscapeWmiString(driveLetter);
+                var query = new ObjectQuery($"SELECT Label FROM Win32_Volume WHERE DriveLetter = '{escapedDriveLetter}'");
+                using (var searcher = new ManagementObjectSearcher(scope, query))
+                {
+                    foreach (ManagementObject volume in searcher.Get())
+                    {
+                        var label = volume["Label"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(label))
+                            return label;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
+        }
+
+        private static string EscapeWmiString(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            return input.Replace("\\", "\\\\").Replace("'", "''");
         }
     }
 }

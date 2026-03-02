@@ -54,9 +54,10 @@ namespace BlossomPrepTool
                 {
                     _usbDiskMap[wizardUsbSelectionView.DriveComboBox.Items.Count] = drive;
                     var hasDisplayName = !string.IsNullOrWhiteSpace(drive.DisplayName);
+                    var sizeText = $"{drive.SizeGB:0.##}GB";
                     var driveText = hasDisplayName
-                        ? $"{drive.DisplayName} (Disk {drive.DiskNumber})"
-                        : $"Disk {drive.DiskNumber}";
+                        ? $"{drive.DisplayName} (Disk {drive.DiskNumber}, {sizeText})"
+                        : $"Disk {drive.DiskNumber} ({sizeText})";
                     wizardUsbSelectionView.DriveComboBox.Items.Add(driveText);
                 }
                 if (wizardUsbSelectionView.DriveComboBox.Items.Count > 0)

@@ -118,24 +118,24 @@ namespace BlossomPrepTool
         {
             try
             {
-                var scope = new ManagementScope(@"\\.\root\cimv2");
-                scope.Connect();
+                var logicalDisks = GetLogicalDisksForPhysicalDisk(diskIndex);
+                var labels = new List<string>();
 
-                // Get all logical disks associated with this physical disk
-                var query = new ObjectQuery($"SELECT Name, VolumeName FROM Win32_LogicalDisk WHERE DeviceID LIKE '%'");
-                using (var searcher = new ManagementObjectSearcher(scope, query))
+                foreach (var logicalDisk in logicalDisks)
                 {
-                    var volumes = new List<string>();
-                    foreach (ManagementObject disk in searcher.Get())
-                    {
-                        var volumeName = disk["VolumeName"]?.ToString();
-                        if (!string.IsNullOrEmpty(volumeName))
-                            volumes.Add(volumeName);
-                    }
+                    var driveLetter = logicalDisk["Name"]?.ToString();
+                    var volumeName = logicalDisk["VolumeName"]?.ToString();
 
-                    if (volumes.Count > 0)
-                        return string.Join(" / ", volumes);
+                    if (!string.IsNullOrWhiteSpace(volumeName) && !string.IsNullOrWhiteSpace(driveLetter))
+                        labels.Add($"{volumeName} ({driveLetter})");
+                    else if (!string.IsNullOrWhiteSpace(volumeName))
+                        labels.Add(volumeName);
+                    else if (!string.IsNullOrWhiteSpace(driveLetter))
+                        labels.Add(driveLetter);
                 }
+
+                if (labels.Count > 0)
+                    return string.Join(" / ", labels.Distinct());
             }
             catch
             {
@@ -151,19 +151,12 @@ namespace BlossomPrepTool
 
             try
             {
-                var scope = new ManagementScope(@"\\.\root\cimv2");
-                scope.Connect();
-
-                // Similar logic to above but returns all found volumes
-                var query = new ObjectQuery($"SELECT Name FROM Win32_LogicalDisk");
-                using (var searcher = new ManagementObjectSearcher(scope, query))
+                var logicalDisks = GetLogicalDisksForPhysicalDisk(diskIndex);
+                foreach (var logicalDisk in logicalDisks)
                 {
-                    foreach (ManagementObject disk in searcher.Get())
-                    {
-                        var name = disk["Name"]?.ToString();
-                        if (!string.IsNullOrEmpty(name))
-                            volumes.Add(name);
-                    }
+                    var name = logicalDisk["Name"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(name))
+                        volumes.Add(name);
                 }
             }
             catch
@@ -171,7 +164,52 @@ namespace BlossomPrepTool
                 // Return empty list
             }
 
-            return volumes;
+            return volumes.Distinct().ToList();
+        }
+
+        private static List<ManagementObject> GetLogicalDisksForPhysicalDisk(int diskIndex)
+        {
+            var logicalDisks = new List<ManagementObject>();
+
+            var scope = new ManagementScope(@"\\.\root\cimv2");
+            scope.Connect();
+
+            var diskQuery = new ObjectQuery($"SELECT DeviceID FROM Win32_DiskDrive WHERE Index = {diskIndex}");
+            using (var diskSearcher = new ManagementObjectSearcher(scope, diskQuery))
+            {
+                foreach (ManagementObject physicalDisk in diskSearcher.Get())
+                {
+                    var deviceId = physicalDisk["DeviceID"]?.ToString();
+                    if (string.IsNullOrWhiteSpace(deviceId))
+                        continue;
+
+                    var escapedDeviceId = deviceId.Replace("\\", "\\\\").Replace("'", "\\'");
+                    var partitionQuery = new ObjectQuery($"ASSOCIATORS OF {{Win32_DiskDrive.DeviceID='{escapedDeviceId}'}} WHERE AssocClass = Win32_DiskDriveToDiskPartition");
+
+                    using (var partitionSearcher = new ManagementObjectSearcher(scope, partitionQuery))
+                    {
+                        foreach (ManagementObject partition in partitionSearcher.Get())
+                        {
+                            var partitionDeviceId = partition["DeviceID"]?.ToString();
+                            if (string.IsNullOrWhiteSpace(partitionDeviceId))
+                                continue;
+
+                            var escapedPartitionDeviceId = partitionDeviceId.Replace("\\", "\\\\").Replace("'", "\\'");
+                            var logicalDiskQuery = new ObjectQuery($"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{escapedPartitionDeviceId}'}} WHERE AssocClass = Win32_LogicalDiskToPartition");
+
+                            using (var logicalDiskSearcher = new ManagementObjectSearcher(scope, logicalDiskQuery))
+                            {
+                                foreach (ManagementObject logicalDisk in logicalDiskSearcher.Get())
+                                {
+                                    logicalDisks.Add(logicalDisk);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return logicalDisks;
         }
     }
 }

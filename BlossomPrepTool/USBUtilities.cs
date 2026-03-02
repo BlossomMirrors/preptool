@@ -49,7 +49,7 @@ namespace BlossomPrepTool
                             if (IsSystemDisk(diskIndex))
                                 continue;
 
-                            var displayName = GetDiskDisplayName(diskIndex) ?? "USB Drive";
+                            var displayName = GetDiskDisplayName(diskIndex);
                             var sizeGB = Math.Round(size / (1024.0 * 1024.0 * 1024.0), 2);
 
                             usbDrives.Add(new USBInfo
@@ -123,15 +123,10 @@ namespace BlossomPrepTool
 
                 foreach (var logicalDisk in logicalDisks)
                 {
-                    var driveLetter = logicalDisk["Name"]?.ToString();
                     var volumeName = logicalDisk["VolumeName"]?.ToString();
 
-                    if (!string.IsNullOrWhiteSpace(volumeName) && !string.IsNullOrWhiteSpace(driveLetter))
-                        labels.Add($"{volumeName} ({driveLetter})");
-                    else if (!string.IsNullOrWhiteSpace(volumeName))
+                    if (!string.IsNullOrWhiteSpace(volumeName))
                         labels.Add(volumeName);
-                    else if (!string.IsNullOrWhiteSpace(driveLetter))
-                        labels.Add(driveLetter);
                 }
 
                 if (labels.Count > 0)

@@ -53,7 +53,11 @@ namespace BlossomPrepTool
                 foreach (var drive in drives)
                 {
                     _usbDiskMap[wizardUsbSelectionView.DriveComboBox.Items.Count] = drive;
-                    wizardUsbSelectionView.DriveComboBox.Items.Add($"Disk {drive.DiskNumber}: {drive.DisplayName} ({drive.SizeGB}GB)");
+                    var hasDisplayName = !string.IsNullOrWhiteSpace(drive.DisplayName);
+                    var driveText = hasDisplayName
+                        ? $"{drive.DisplayName} (Disk {drive.DiskNumber})"
+                        : $"Disk {drive.DiskNumber}";
+                    wizardUsbSelectionView.DriveComboBox.Items.Add(driveText);
                 }
                 if (wizardUsbSelectionView.DriveComboBox.Items.Count > 0)
                     wizardUsbSelectionView.DriveComboBox.SelectedIndex = 0;

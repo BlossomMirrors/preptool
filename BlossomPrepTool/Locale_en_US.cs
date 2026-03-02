@@ -46,6 +46,8 @@ a normal Windows USB drive",
                 ["WizardUsbSelection.NoUsbSelected"] = "No USB selected",
                 ["WizardUsbSelection.ContinueButton"] = "Continue →",
                 ["WizardUsbSelection.BackButton"] = "← Back",
+                ["WizardUsbSelection.DriveWithLabel"] = "{0} (Disk {1}, {2})",
+                ["WizardUsbSelection.DriveWithoutLabel"] = "Disk {0} ({1})",
 
                 ["WizardPartition.Title"] = "Allocate Space",
                 ["WizardPartition.Description"] = "Choose how much space to allocate for BlossomOS from your C: drive.",

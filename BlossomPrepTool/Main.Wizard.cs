@@ -56,8 +56,8 @@ namespace BlossomPrepTool
                     var hasDisplayName = !string.IsNullOrWhiteSpace(drive.DisplayName);
                     var sizeText = $"{drive.SizeGB:0.##}GB";
                     var driveText = hasDisplayName
-                        ? $"{drive.DisplayName} (Disk {drive.DiskNumber}, {sizeText})"
-                        : $"Disk {drive.DiskNumber} ({sizeText})";
+                        ? Localizer.GetString("WizardUsbSelection.DriveWithLabel", drive.DisplayName, drive.DiskNumber, sizeText)
+                        : Localizer.GetString("WizardUsbSelection.DriveWithoutLabel", drive.DiskNumber, sizeText);
                     wizardUsbSelectionView.DriveComboBox.Items.Add(driveText);
                 }
                 if (wizardUsbSelectionView.DriveComboBox.Items.Count > 0)

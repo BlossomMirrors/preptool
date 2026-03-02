@@ -47,6 +47,8 @@ einem normalen Windows USB-Laufwerk",
                 ["WizardUsbSelection.NoUsbSelected"] = "Kein USB ausgewählt",
                 ["WizardUsbSelection.ContinueButton"] = "Weiter →",
                 ["WizardUsbSelection.BackButton"] = "← Zurück",
+                ["WizardUsbSelection.DriveWithLabel"] = "{0} (Datenträger {1}, {2})",
+                ["WizardUsbSelection.DriveWithoutLabel"] = "Datenträger {0} ({1})",
 
                 ["WizardPartition.Title"] = "Speicherplatz zuweisen",
                 ["WizardPartition.Description"] = "Wähle, wie viel Speicherplatz von deinem C:-Laufwerk für BlossomOS reserviert werden soll.",
